@@ -1,0 +1,41 @@
+.leftMenu {
+    display: flex;
+    flex: 0;
+    min-width:250px;
+    flex-grow: inherit;
+}
+
+.mainContent {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 40vh);
+    min-width: 100%;
+    padding: 1rem 1rem;
+    flex-grow: inherit;
+}
+
+.headerBar {
+  display: flex;
+  flex: 1;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.headerBar h1 {
+  color: dodgerblue;
+}
+
+.footer {
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  border-top: 1px solid #eaeaea;
+  
+}
+
+.footer a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}

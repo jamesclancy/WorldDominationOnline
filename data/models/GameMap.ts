@@ -1,0 +1,79 @@
+export type TerritoryPotentialActions = "None" | "Move" | "Attack" | "Select" | "AddArmies";
+export type ContinentNameKey = "NorthAmerica" | "SouthAmerica" | "Europe" | "Asia" | "Africa" | "Oceania";
+export type CountryNameKey =
+  | "Alaska"
+  | "NorthWesternTerritory"
+  | "Alberta"
+  | "Ontario"
+  | "Quebec"
+  | "WesternUS"
+  | "EasternUS"
+  | "CentralAmerica"
+  | "Greenland"
+  | "Venezuela"
+  | "Brazil"
+  | "Peru"
+  | "Argentina"
+  | "Iceland"
+  | "GreatBritain"
+  | "WesternEurope"
+  | "Scandinavia"
+  | "NorthernEurope"
+  | "SouthernEurope"
+  | "Ukraine"
+  | "NorthAfrica"
+  | "Egypt"
+  | "EastAfrica"
+  | "Congo"
+  | "SouthAfrica"
+  | "Madagascar"
+  | "Afghanistan"
+  | "China"
+  | "Hindustan"
+  | "Irkutsk"
+  | "Japan"
+  | "Kamchatka"
+  | "MiddleEast"
+  | "Mongolia"
+  | "Siam"
+  | "Siberia"
+  | "Ural"
+  | "Yakutsk"
+  | "Indonesia"
+  | "NewGuinea"
+  | "WesternAustralia"
+  | "EasternAustralia";
+
+export type Continent = {
+  name: ContinentNameKey;
+  displayName: string;
+  bonusValue: number;
+};
+
+export type Territory = {
+  name: CountryNameKey;
+  displayText: string;
+  continentName: ContinentNameKey;
+  value: number;
+  isoCodes?: string[];
+};
+
+export type TerritoryBridge = [CountryNameKey, CountryNameKey];
+
+export type TerritoryPathDefinition = {
+  name: CountryNameKey;
+  pathDef: string;
+  textBoxX: number;
+  textBoxY: number;
+  textBoxWidth: number;
+  textBoxHeight: number;
+};
+
+export type GameMap = {
+  continents: Continent[];
+  territories: Territory[];
+  territoryBridges: TerritoryBridge[];
+  territoryPathDefinitions: TerritoryPathDefinition[];
+};
+
+export default GameMap;

@@ -1,0 +1,260 @@
+[
+  {
+    "continentName": "NorthAmerica",
+    "name": "Alaska",
+    "displayText": "Alaska",
+    "value": 1,
+    "isoCodes": []
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "NorthWesternTerritory",
+    "displayText": "NorthWesternTerritory",
+    "value": 6,
+    "isoCodes": []
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "Alberta",
+    "displayText": "Alberta",
+    "value": 2,
+    "isoCodes": []
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "Ontario",
+    "displayText": "Ontario",
+    "value": 7,
+    "isoCodes": []
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "Quebec",
+    "displayText": "Quebec",
+    "value": 8,
+    "isoCodes": []
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "WesternUS",
+    "displayText": "Western US",
+    "value": 9
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "EasternUS",
+    "displayText": "Eastern US",
+    "value": 4
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "CentralAmerica",
+    "displayText": "Central America",
+    "value": 3,
+    "isoCodes": ["MX"]
+  },
+  {
+    "continentName": "NorthAmerica",
+    "name": "Greenland",
+    "displayText": "Greenland",
+    "value": 5
+  },
+  {
+    "continentName": "SouthAmerica",
+    "name": "Venezuela",
+    "displayText": "Venezuela",
+    "value": 3
+  },
+  {
+    "continentName": "SouthAmerica",
+    "name": "Brazil",
+    "displayText": "Brazil",
+    "value": 2
+  },
+  {
+    "continentName": "SouthAmerica",
+    "name": "Peru",
+    "displayText": "Peru",
+    "value": 4
+  },
+  {
+    "continentName": "SouthAmerica",
+    "name": "Argentina",
+    "displayText": "Argentina",
+    "value": 1
+  },
+  {
+    "continentName": "Europe",
+    "name": "Iceland",
+    "displayText": "Iceland",
+    "value": 2
+  },
+  {
+    "continentName": "Europe",
+    "name": "GreatBritain",
+    "displayText": "Great Britain",
+    "value": 1
+  },
+  {
+    "continentName": "Europe",
+    "name": "WesternEurope",
+    "displayText": "Western Europe",
+    "value": 7
+  },
+  {
+    "continentName": "Europe",
+    "name": "Scandinavia",
+    "displayText": "Scandinavia",
+    "value": 4
+  },
+  {
+    "continentName": "Europe",
+    "name": "NorthernEurope",
+    "displayText": "Northern Europe",
+    "value": 3
+  },
+  {
+    "continentName": "Europe",
+    "name": "SouthernEurope",
+    "displayText": "Southern Europe",
+    "value": 5
+  },
+  {
+    "continentName": "Europe",
+    "name": "Ukraine",
+    "displayText": "Ukraine",
+    "value": 6
+  },
+  {
+    "continentName": "Africa",
+    "name": "NorthAfrica",
+    "displayText": "North Africa",
+    "value": 5
+  },
+  {
+    "continentName": "Africa",
+    "name": "Egypt",
+    "displayText": "Egypt",
+    "value": 3
+  },
+  {
+    "continentName": "Africa",
+    "name": "EastAfrica",
+    "displayText": "East Africa",
+    "value": 2
+  },
+  {
+    "continentName": "Africa",
+    "name": "Congo",
+    "displayText": "Congo",
+    "value": 1
+  },
+  {
+    "continentName": "Africa",
+    "name": "SouthAfrica",
+    "displayText": "South Africa",
+    "value": 6
+  },
+  {
+    "continentName": "Africa",
+    "name": "Madagascar",
+    "displayText": "Madagascar",
+    "value": 4
+  },
+  {
+    "continentName": "Asia",
+    "name": "Afghanistan",
+    "displayText": "Afghanistan",
+    "value": 1
+  },
+  {
+    "continentName": "Asia",
+    "name": "China",
+    "displayText": "China",
+    "value": 2
+  },
+  {
+    "continentName": "Asia",
+    "name": "Hindustan",
+    "displayText": "Hindustan",
+    "value": 3
+  },
+  {
+    "continentName": "Asia",
+    "name": "Irkutsk",
+    "displayText": "Irkutsk",
+    "value": 4
+  },
+  {
+    "continentName": "Asia",
+    "name": "Japan",
+    "displayText": "Japan",
+    "value": 5
+  },
+  {
+    "continentName": "Asia",
+    "name": "Kamchatka",
+    "displayText": "Kamchatka",
+    "value": 6
+  },
+  {
+    "continentName": "Asia",
+    "name": "MiddleEast",
+    "displayText": "MiddleEast",
+    "value": 7
+  },
+  {
+    "continentName": "Asia",
+    "name": "Mongolia",
+    "displayText": "Mongolia",
+    "value": 8
+  },
+  {
+    "continentName": "Asia",
+    "name": "Siam",
+    "displayText": "Siam",
+    "value": 9
+  },
+  {
+    "continentName": "Asia",
+    "name": "Siberia",
+    "displayText": "Siberia",
+    "value": 10
+  },
+  {
+    "continentName": "Asia",
+    "name": "Ural",
+    "displayText": "Ural",
+    "value": 11
+  },
+  {
+    "continentName": "Asia",
+    "name": "Yakutsk",
+    "displayText": "Yakutsk",
+    "value": 12
+  },
+  {
+    "continentName": "Oceania",
+    "name": "Indonesia",
+    "displayText": "Indonesia",
+    "value": 3
+  },
+  {
+    "continentName": "Oceania",
+    "name": "NewGuinea",
+    "displayText": "New Guinea",
+    "value": 2
+  },
+  {
+    "continentName": "Oceania",
+    "name": "WesternAustralia",
+    "displayText": "Western Australia",
+    "value": 4
+  },
+  {
+    "continentName": "Oceania",
+    "name": "EasternAustralia",
+    "displayText": "Eastern Australia",
+    "value": 1
+  }
+]
