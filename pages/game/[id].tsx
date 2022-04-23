@@ -32,7 +32,7 @@ const GameBoard: NextPage<IGameBoardProps> = (
         detailRequestedTerritory: undefined
       }}
     >
-       <WorldMap />
+       <WorldMap gameId={props.gameId}/>
     </GameContext.Provider>
     </Layout>
   );

@@ -82,9 +82,10 @@ function applyAttackResults(
       playerName: selectedTerritoryState.playerName,
     };
   } else {
+    const deadAttackers = selectedArmies - survivingAttackers;
     updatedSelectedTerritoryState = {
       ...selectedTerritoryState,
-      armies: selectedTerritoryState.armies - (selectedArmies - survivingAttackers),
+      armies: selectedTerritoryState.armies - deadAttackers,
     };
     updatedTargetTerritoryState = {
       ...targetTerritoryState,

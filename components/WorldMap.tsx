@@ -1,14 +1,5 @@
 import { useContext, useEffect, useReducer } from "react";
-import {
-  Button,
-  Col,
-  Container,
-  Form,
-  Nav,
-  Navbar,
-  NavDropdown,
-  Row,
-} from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import {
   GameContext,
   IGameContext,
@@ -16,6 +7,7 @@ import {
   WorldMapContext,
 } from "../data/models/Contexts";
 import { CountryNameKey } from "../data/models/GameMap";
+import { RoundStepType } from "../data/models/GameState";
 import {
   IWorldMapState,
   worldMapReducer,
@@ -24,9 +16,14 @@ import { NamedTerritoryTile } from "./TerritoryTile";
 
 import WorldMapControlPanel from "./WorldMapControlPanel";
 
-const WorldMap = () => {
+interface IWorldMapProps {
+  gameId: string;
+}
+
+const WorldMap = (props: IWorldMapProps) => {
   let gameContext = useContext<IGameContext>(GameContext);
   const initialState: IWorldMapState = {
+    gameId: props.gameId,
     currentMap: gameContext.currentMap,
     currentPlayers: gameContext.currentPlayers,
     currentTurn: gameContext.currentPlayers[0].name,
@@ -113,7 +110,10 @@ const WorldMap = () => {
             <div>
               <svg viewBox="0 40 210 160">
                 {gameContext.currentMap.territories.map((x) => (
-                  <NamedTerritoryTile name={x.name}  key={`tile_for_${x.name}`}/>
+                  <NamedTerritoryTile
+                    name={x.name}
+                    key={`tile_for_${x.name}`}
+                  />
                 ))}
               </svg>
             </div>

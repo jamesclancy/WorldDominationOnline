@@ -1,3 +1,4 @@
+import { gameService } from "../client-services/GameService";
 import GameMap, { CountryNameKey } from "../models/GameMap";
 import { RoundStepType, TerritoryState } from "../models/GameState";
 import Player from "../models/Player";
@@ -13,6 +14,7 @@ export type ArmyApplicationSet = {
 };
 
 export interface IWorldMapState {
+  gameId: string;
   currentMap: GameMap;
   currentPlayers: [Player, Player];
   currentTurn: string;
@@ -24,6 +26,26 @@ export interface IWorldMapState {
   roundStepRemainingPlayerTurns: string[];
   armiesToApply: ArmyApplicationSet[];
   roundCounter: number;
+}
+
+export interface HistoricalEvent {
+  playerTurn: string;
+  roundCount: number;
+  newPlayerTurn: string;
+  mewPlayerRoundStep: RoundStepType;
+  newSelectedTerritory: CountryNameKey | undefined;
+  details: HistoricalEventDetailItem[];
+  humanReadableDescription: string;
+}
+
+export interface HistoricalEventDetailItem {
+  selectedTerritoryName: CountryNameKey;
+  selectedTerritoryNewOwner: string;
+  selectedTerritoryNewArmies: number;
+  targetTerritoryName: CountryNameKey | undefined;
+  targetTerritoryNewOwner: string | undefined;
+  targetTerritoryNewArmies: number | undefined;
+  roundStep: RoundStepType;
 }
 
 export interface IWorldMapAction {
@@ -43,25 +65,73 @@ export interface IWorldMapAction {
 export function worldMapReducer(
   state: IWorldMapState,
   action: IWorldMapAction
-) {
+) : IWorldMapState {
+  const [newState, historyItem] = performMovementAndGetResult(state, action);
+
+  if (historyItem) console.log(historyItem);
+  else console.log("no");
+
+  //await gameService.addHistoryToGame(state.gameId, historyItem);
+
+  return newState;
+}
+
+function buildStateHistoryTupleFromStates(
+  previousState: IWorldMapState,
+  newState: IWorldMapState,
+  humanReadableDescription: string,
+  details: HistoricalEventDetailItem[]
+): [IWorldMapState, HistoricalEvent] {
+  const historyItem1: HistoricalEvent = {
+    playerTurn: previousState.currentTurn,
+    roundCount: previousState.roundCounter,
+    newPlayerTurn: newState.currentTurn,
+    mewPlayerRoundStep: newState.roundStep,
+    newSelectedTerritory: newState.selectedTerritory,
+    details: details,
+    humanReadableDescription: humanReadableDescription,
+  };
+  return [newState, historyItem1];
+}
+
+function performMovementAndGetResult(
+  state: IWorldMapState,
+  action: IWorldMapAction
+): [IWorldMapState, HistoricalEvent | undefined] {
   switch (action.type) {
     case "MoveToNextStep":
-      return moveToNextTurn(state);
+      return buildStateHistoryTupleFromStates(
+        state,
+        moveToNextTurn(state),
+        "",
+        []
+      );
     case "LoadInitialState":
-      if (action.initialState) return action.initialState;
-      break;
+      return buildStateHistoryTupleFromStates(
+        state,
+        action.initialState ?? state,
+        "",
+        []
+      );
     case "ClearSelection":
       let newHistory = appendEventToHistory(
         state.roundCounter,
         `${state.currentTurn} - Cleared Selection`,
         state.history
       );
-      return {
+      const newStateCs = {
         ...state,
+        roundCounter: state.roundCounter + 1,
         history: newHistory,
         selectedTerritory: undefined,
         detailRequestedTerritory: undefined,
       };
+      return buildStateHistoryTupleFromStates(
+        state,
+        newStateCs,
+        newHistory,
+        []
+      );
     case "SelectTile":
       if (!state.selectedTerritory && action.target) {
         let newHistory = appendEventToHistory(
@@ -69,38 +139,49 @@ export function worldMapReducer(
           `${state.currentTurn} - Selected ${action.target}`,
           state.history
         );
-        return {
+        const newStateSt = {
           ...state,
+          roundCounter: state.roundCounter + 1,
           history: newHistory,
           selectedTerritory: action.target,
         };
+        return buildStateHistoryTupleFromStates(
+          state,
+          newStateSt,
+          newHistory,
+          []
+        );
       }
-      return state;
     case "ShowDetail":
       let newHistoryForDetailReq = appendEventToHistory(
         state.roundCounter,
         `${state.currentTurn} - Requested detail for ${action.target}`,
         state.history
       );
-      return {
-        ...state,
-        history: newHistoryForDetailReq,
-        detailRequestedTerritory: action.target,
-      };
-      return state;
+      return [
+        {
+          ...state,
+          roundCounter: state.roundCounter + 1,
+          history: newHistoryForDetailReq,
+          detailRequestedTerritory: action.target,
+        },
+        undefined,
+      ];
     case "TargetTile":
-      if (!action.armiesToApply || !action.target) return state;
-      if (state.selectedTerritory === undefined)
-        return performAddArmies(state, action.target, action.armiesToApply);
+      if (!action.armiesToApply || !action.target) return [state, undefined];
+      const newStateTT =
+        state.selectedTerritory === undefined
+          ? performAddArmies(state, action.target, action.armiesToApply)
+          : performAttackOrMove(
+              { ...state, roundCounter: state.roundCounter + 1 },
+              state.selectedTerritory,
+              action.target,
+              action.armiesToApply
+            );
 
-      return performAttackOrMove(
-        state,
-        state.selectedTerritory,
-        action.target,
-        action.armiesToApply
-      );
+      return buildStateHistoryTupleFromStates(state, newStateTT, "", []);
   }
-  return state;
+  return [state, undefined];
 }
 
 function appendEventToHistory(
