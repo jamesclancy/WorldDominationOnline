@@ -1,9 +1,8 @@
 import type { GetStaticProps, NextPage } from "next";
+import Link from "next/link";
 import { Table } from "react-bootstrap";
 import { MapDefinition } from "../../data/models/GameState";
-import {
-  PersistanceService
-} from "../../data/services/PersistanceService";
+import { PersistanceService } from "../../data/services/PersistanceService";
 import { Layout } from "../_layout";
 
 interface ICreateGameProps {
@@ -24,11 +23,13 @@ const CreateGame: NextPage<ICreateGameProps> = (props: ICreateGameProps) => {
           <tbody>
             {props.availableMaps.map((map) => {
               return (
-                <tr>
+                <tr key={`tr_{map.id}`}>
                   <td>
-                    <a href={`/game/select-territories?mapId=${map.id}`}>
-                      {map.name} ({map.id})
-                    </a>
+                    <Link href={`/game/select-territories?mapId=${map.id}`}>
+                      <a>
+                        {map.name} ({map.id})
+                      </a>
+                    </Link>
                   </td>
                 </tr>
               );

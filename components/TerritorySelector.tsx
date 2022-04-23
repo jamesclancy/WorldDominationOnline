@@ -124,26 +124,27 @@ const TerritorySelect = (props: ITerritorySelectProps) => {
     canSubmitData: false,
   };
 
-
   let [state, dispatch] = useReducer(territorySelectReducer, initialState);
 
-  useEffect(()=> {
+  useEffect(() => {
     setRandomDataSet();
-  },[]);
+  }, []);
 
   const setRandomDataSet = () => {
     dispatch({ type: "Randomize" });
   };
 
-  const onChangePlayerName = (rowIndex: number, columnIndex: number) =>
-    useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangePlayerName = (rowIndex: number, columnIndex: number) => {
+   return (e: React.ChangeEvent<HTMLInputElement>) => {
       changePlayer(e?.currentTarget?.value ?? "", rowIndex, columnIndex);
-    }, []);
+    };
+  };
 
-  const onChangeArmies = (rowIndex: number, columnIndex: number) =>
-    useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeArmies = (rowIndex: number, columnIndex: number) => {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
       changeArmies(e?.currentTarget?.value ?? "", rowIndex, columnIndex);
-    }, []);
+    };
+  };
 
   const cellRenderer = (rowIndex: number, columnIndex: number) => {
     if (columnIndex === 2) {
@@ -187,7 +188,7 @@ const TerritorySelect = (props: ITerritorySelectProps) => {
           return (
             <tr style={rowstyle} key={row[1]}>
               {row.map((_, x) => (
-                <td>{cellRenderer(y, x)}</td>
+                <td key={`st_${x}_${y}`}>{cellRenderer(y, x)}</td>
               ))}
             </tr>
           );
@@ -306,10 +307,7 @@ const TerritorySelect = (props: ITerritorySelectProps) => {
         </Breadcrumb>
         <SelectTable />
         <div className="d-flex justify-content-end mt-3">
-          <Button
-            onClick={setRandomDataSet}
-            variant="danger"
-          >
+          <Button onClick={setRandomDataSet} variant="danger">
             Randomize Selection
           </Button>
 

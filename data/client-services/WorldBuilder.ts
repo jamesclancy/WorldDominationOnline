@@ -10,8 +10,9 @@ export async function constructEmptyWorldMapContext(): Promise<ITileContext> {
   let gameContext = await constructInitialGameContext();
   let context: ITileContext = {
     ...gameContext,
-    onClick: (x) => {},
+    onSelect: (x) => {},
     applyArmies: (x, y) => {},
+    onShowDetail: (x) => {}
   };
   return context;
 }
@@ -26,6 +27,7 @@ export async function constructInitialGameContext(): Promise<IGameContext> {
     currentTurn: newGame.currentPlayers[0].name,
     selectedTerritory: undefined,
     currentTurnOutstandingArmies: 0,
+    detailRequestedTerritory: undefined
   };
 
   return context;

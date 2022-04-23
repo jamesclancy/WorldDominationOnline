@@ -66,7 +66,7 @@ export function GeneralPageLayout(
     <Layout
       footer={
         <>
-          <a href="/about">About</a> | <a href="/rules">Rules</a>
+          <Link href="/about">About</Link> | <Link href="/rules">Rules</Link>
         </>
       }
     >

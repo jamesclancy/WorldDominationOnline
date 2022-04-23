@@ -54,9 +54,9 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
     })
     .filter((x) => x.action !== "None")
     .map((x) => {
-      let click = () => worldMapContext.onClick(x.name);
+      let click = () =>  x.action === "Select" ? worldMapContext.onSelect(x.name) : worldMapContext.onShowDetail(x.name) ;
       let text = `${x.name}-${x.action}`;
-      return <NavDropdown.Item onClick={click}>{text}</NavDropdown.Item>;
+      return <NavDropdown.Item onClick={click} key={text}>{text}</NavDropdown.Item>;
     });
 
   if (worldMapContext.selectedTerritory !== undefined)
@@ -84,7 +84,7 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
             >
               {" "}
               <Navbar.Brand style={{ backgroundColor: "#fff" }}>
-                {worldMapContext.currentTurn}'s Turn
+                {worldMapContext.currentTurn}&apos;s Turn
               </Navbar.Brand>
               <Nav.Link active={worldMapContext.roundStep === "AddArmies"}>
                 Planning Phase

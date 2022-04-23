@@ -137,8 +137,11 @@ export function buildTerritoryPropsForTile(context: ITileContext, name: CountryN
     isTerritorySelected: isSelected,
     pathDefinition: territoryPath,
     ownerIndex: ownerPlayerIndex,
-    select: () => worldMapContext.onClick(name),
+    select: () => worldMapContext.onSelect(name),
     applyArmy: (selectedArmies) => worldMapContext.applyArmies(name, selectedArmies),
+    requestShowDetail: () => worldMapContext.onShowDetail(name),
+    clearDetail: () => worldMapContext.onShowDetail(undefined),
+    shouldShowDetail: worldMapContext.detailRequestedTerritory != undefined && worldMapContext.detailRequestedTerritory === name
   };
   return props;
 }

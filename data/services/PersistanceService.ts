@@ -187,7 +187,7 @@ const createGame = async (createRequest: {
 
 const getGameSummariesForUser: (
   userName: string
-) => Promise<GameSummary | null> = async (userName: string) => {
+) => Promise<GameSummary[] | null> = async (userName: string) => {
   const availableMaps = await prisma.gameRecord.findMany({
     where: {
       AND: [

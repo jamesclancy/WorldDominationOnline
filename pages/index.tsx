@@ -71,7 +71,7 @@ const Home: NextPage = () => {
           <tbody>
             {gameList.map((x) => {
               return (
-                <tr>
+                <tr key={`tr_${x.id}`}>
                   <td>
                     <Link href={`/game/${x.id}`}>{x.id}</Link>
                   </td>

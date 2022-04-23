@@ -88,10 +88,10 @@ export function mapQueryResultToGameSummary(availableMaps: {
   id: string;
   currentTurnStep: string;
   currentTurn: number;
-  winner: { name: string; displayName: string } | null;
-  currentTurnPlayer: { name: string; displayName: string } | null;
-  player1: { name: string; displayName: string };
-  player2: { name: string; displayName: string };
+  winner: { name: string; displayName: string | null } | null;
+  currentTurnPlayer: { name: string; displayName: string | null  } | null;
+  player1: { name: string; displayName: string | null  };
+  player2: { name: string; displayName: string | null  };
   map: { id: string; name: string };
   createdAt: Date;
   updatedAt: Date;
@@ -106,11 +106,11 @@ export function mapQueryResultToGameSummary(availableMaps: {
     },
     player1: {
       name: availableMaps.player1.name,
-      displayName: availableMaps.player1.displayName,
+      displayName: availableMaps.player1.displayName ?? availableMaps.player1.name,
     },
     player2: {
       name: availableMaps.player2.name,
-      displayName: availableMaps.player2.displayName,
+      displayName: availableMaps.player2.displayName ?? availableMaps.player2.name,
     },
     startDate: availableMaps.createdAt.toUTCString(),
     updatedDate: availableMaps.updatedAt.toUTCString(),

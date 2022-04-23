@@ -39,18 +39,41 @@ const WorldMap = () => {
       .slice(1),
     armiesToApply: [],
     roundCounter: 0,
+    detailRequestedTerritory: undefined,
   };
 
   let [state, dispatch] = useReducer(worldMapReducer, initialState);
 
   useEffect(() => {
-    dispatch({ type: "LoadInitialState", initialState: initialState });
+    const loadedState: IWorldMapState = {
+      currentMap: gameContext.currentMap,
+      currentPlayers: gameContext.currentPlayers,
+      currentTurn: gameContext.currentPlayers[0].name,
+      currentPositions: gameContext.currentPositions,
+      selectedTerritory: undefined,
+      history: "Game Started",
+      roundStep: "Attack",
+      roundStepRemainingPlayerTurns: gameContext.currentPlayers
+        .map((x) => x.name)
+        .slice(1),
+      armiesToApply: [],
+      roundCounter: 0,
+      detailRequestedTerritory: undefined,
+    };
+    dispatch({ type: "LoadInitialState", initialState: loadedState });
   }, [gameContext]);
 
   let applyArmies = (name: CountryNameKey, selectedArmies: number) => {
     dispatch({
       type: "TargetTile",
       armiesToApply: selectedArmies,
+      target: name,
+    });
+  };
+
+  let showDetail = (name: CountryNameKey | undefined) => {
+    dispatch({
+      type: "ShowDetail",
       target: name,
     });
   };
@@ -64,12 +87,14 @@ const WorldMap = () => {
     currentPositions: state.currentPositions,
     currentTurn: state.currentTurn,
     selectedTerritory: state.selectedTerritory,
+    detailRequestedTerritory: state.detailRequestedTerritory,
     roundStep: state.roundStep,
-    onClick: trySelectTerritory,
+    onSelect: trySelectTerritory,
     applyArmies: applyArmies,
     currentTurnOutstandingArmies:
       state.armiesToApply.find((x) => x.playerName === state.currentTurn)
         ?.numberOfArmiesRemaining ?? 0,
+    onShowDetail: showDetail,
   };
 
   let clearSelectedTerritory = () => {
@@ -88,7 +113,7 @@ const WorldMap = () => {
             <div>
               <svg viewBox="0 40 210 160">
                 {gameContext.currentMap.territories.map((x) => (
-                  <NamedTerritoryTile name={x.name} />
+                  <NamedTerritoryTile name={x.name}  key={`tile_for_${x.name}`}/>
                 ))}
               </svg>
             </div>
@@ -96,12 +121,12 @@ const WorldMap = () => {
         </Row>
       </Container>
       <WorldMapControlPanel
-            selectedTerritory={state.selectedTerritory}
-            clearSelectedTerritory={clearSelectedTerritory}
-            roundStep={state.roundStep}
-            history={state.history}
-            moveNextStep={moveNextStep}
-       />
+        selectedTerritory={state.selectedTerritory}
+        clearSelectedTerritory={clearSelectedTerritory}
+        roundStep={state.roundStep}
+        history={state.history}
+        moveNextStep={moveNextStep}
+      />
     </WorldMapContext.Provider>
   );
 };

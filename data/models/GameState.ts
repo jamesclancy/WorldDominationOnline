@@ -42,8 +42,8 @@ export interface GameDetail {
   winningPlayer?: Player;
   player1: Player;
   player2: Player;
-  startDate: Date;
-  updatedDate: Date;
+  startDate: string;
+  updatedDate: string;
 
   currentMap: GameMap;
   currentTerritoryState: TerritoryState[];

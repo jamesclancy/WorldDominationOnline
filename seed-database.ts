@@ -4,6 +4,12 @@ import prisma from "./lib/prisma";
 export async function seedDatabase() {
   let gameInfo = await constructInitialGameContext();
 
+  let map = await prisma.mapRecord.create({
+    data: {
+      name: "Default",
+    },
+  });
+
   await gameInfo.currentMap.continents.forEach(async (cont) => {
     let contRecord = await prisma.continentRecord.findFirst({
       where: { name: cont.name },
@@ -11,7 +17,7 @@ export async function seedDatabase() {
     if (contRecord === undefined)
       await prisma.continentRecord.create({
         data: {
-          mapId: id[0],
+          mapId: map.id,
           name: cont.name,
           displayName: cont.displayName,
           bonusValue: cont.bonusValue,

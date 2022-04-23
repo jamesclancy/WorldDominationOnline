@@ -1,5 +1,11 @@
-import { useContext, useEffect, useReducer } from "react";
-import { Button, Form, ModalDialog } from "react-bootstrap";
+import {
+  ChangeEvent,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
+import { Button, Form, Modal } from "react-bootstrap";
 import { ITileContext, WorldMapContext } from "../data/models/Contexts";
 import {
   Continent,
@@ -23,6 +29,9 @@ export interface ITerritoryProps {
   pathDefinition: TerritoryPathDefinition;
   ownerIndex: number;
   select(): void;
+  requestShowDetail(): void;
+  clearDetail(): void;
+  shouldShowDetail: boolean;
 }
 
 export interface INamedTerritoryTile {
@@ -35,65 +44,41 @@ export const NamedTerritoryTile = (props: INamedTerritoryTile) => {
   let terPops = buildTerritoryPropsForTile(worldMapContext, props.name);
 
   if (typeof terPops === "string") {
-    console.log(terPops);
     return <></>;
   }
   return <TerritoryTile {...terPops} />;
 };
 
-interface ITerritoryState {
-  showPopover: boolean;
-  selectedArmies: number;
-}
-
-interface ITerritoryStateAction {
-  type: "None" | "TogglePopover" | "SelectArmies" | "Cancel" | "Confirm";
-  armyCount?: number;
-}
-
-const territoryStateReducer = (state: ITerritoryState, action: ITerritoryStateAction) => {
-  switch (action.type) {
-    case "Cancel":
-      return { ...state, showPopover: false };
-    case "TogglePopover":
-      return { ...state, showPopover: !state.showPopover };
-    case "SelectArmies":
-      return { ...state, selectedArmies: action.armyCount ?? 1 };
-  }
-
-  return state;
-};
-
 const TerritoryTile = (props: ITerritoryProps) => {
-  let initialState: ITerritoryState = { showPopover: false, selectedArmies: props.possibleArmiesToApply };
-  let [state, dispatch] = useReducer(territoryStateReducer, initialState);
+  let [selectedArmies, setSelectedArmies] = useState(
+    props.possibleArmiesToApply
+  );
+
+  useEffect(() => {
+    setSelectedArmies(props.possibleArmiesToApply);
+  }, [props]);
 
   const isSelected = props.isTerritorySelected;
   const isClickable = props.potentialActions !== "None";
-
-  useEffect(() => {
-    dispatch({ type: "SelectArmies", armyCount: props.possibleArmiesToApply });
-  }, [props]);
 
   function click() {
     if (isClickable) props.select();
   }
 
   function applyArmies() {
-    togglePopover();
-    props.applyArmy(state.selectedArmies);
-  }
-
-  function togglePopover() {
-    dispatch({ type: "TogglePopover" });
+    props.applyArmy(selectedArmies);
   }
 
   function setArmies(armies: number) {
-    dispatch({ type: "SelectArmies", armyCount: armies });
+    setSelectedArmies(armies);
   }
 
-  let popOverContent = () => {
-    let slider =
+  function armyRangeUpdated(e: ChangeEvent<HTMLInputElement>) {
+    setArmies(e.target.valueAsNumber);
+  }
+
+  let PopOverModal = () => {
+    let Slider = () =>
       props.possibleArmiesToApply === 1 ? (
         <p>Are you sure you want to use your only spare army?</p>
       ) : (
@@ -103,25 +88,27 @@ const TerritoryTile = (props: ITerritoryProps) => {
             key="slider"
             min={1}
             max={props.possibleArmiesToApply}
-            onChange={setArmies}
-            value={state.selectedArmies}
-          />
+            step={1}
+            onChange={armyRangeUpdated}
+            value={selectedArmies}
+          />{" "}
+          {selectedArmies}
         </>
       );
 
     return (
-      <div className="popOverSelector">
-        <h4>Confirm {props.potentialActions}</h4>
-        {slider}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 15 }}>
-          <Button onClick={togglePopover}>
-            Cancel
-          </Button>
-          <Button onClick={applyArmies}>
-            Confirm
-          </Button>
-        </div>
-      </div>
+      <Modal show centered backdrop="static" keyboard={false} animation={false}>
+        <Modal.Header>
+          <Modal.Title>Confirm {props.potentialActions}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Slider />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={props.clearDetail}>Cancel</Button>
+          <Button onClick={applyArmies}>Confirm</Button>
+        </Modal.Footer>
+      </Modal>
     );
   };
 
@@ -171,7 +158,6 @@ const TerritoryTile = (props: ITerritoryProps) => {
         fill={bannerColor}
         rx={3}
       />
-
       <rect
         x={props.pathDefinition.textBoxX + 1}
         width={2}
@@ -230,7 +216,7 @@ const TerritoryTile = (props: ITerritoryProps) => {
 
   return (
     <>
-      <g onClick={togglePopover}>
+      <g onClick={props.requestShowDetail}>
         <path
           d={props.pathDefinition.pathDef}
           key={props.territory.name}
@@ -240,9 +226,7 @@ const TerritoryTile = (props: ITerritoryProps) => {
         ></path>
         {textGroup}
       </g>
-      <ModalDialog hidden={!state.showPopover}>
-        {popOverContent()}
-      </ModalDialog>
+      {props.shouldShowDetail && <PopOverModal />}
     </>
   );
 };

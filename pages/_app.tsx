@@ -1,4 +1,4 @@
-import "@fontsource/news-cycle"
+import "@fontsource/roboto"
 import "../styles/globals.css";
 import '../styles/scss/global.scss' 
 import type { AppProps } from "next/app";

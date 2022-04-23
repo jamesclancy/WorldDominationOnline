@@ -56,13 +56,6 @@ const Home: NextPage = () => {
             </Spinner>
           </>
         );
-      case "TerritorySelect":
-        return (
-          <TerritorySelect
-            Territories={state.currentContext.currentMap.territories}
-            onStartGame={startGame}
-          />
-        );
       case "WorldMap":
         return <WorldMap />;
     }

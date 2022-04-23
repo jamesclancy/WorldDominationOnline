@@ -19,6 +19,7 @@ const emptyContext: IGameContext = {
   roundStep: "Attack",
   selectedTerritory: undefined,
   currentTurnOutstandingArmies: 0,
+  detailRequestedTerritory: undefined
 };
 
 const emptyMapContext: ITileContext = {
@@ -37,8 +38,10 @@ const emptyMapContext: ITileContext = {
   roundStep: "Movement",
   selectedTerritory: undefined,
   applyArmies: (x, y) => {},
-  onClick: (x) => {},
+  onSelect: (x) => {},
   currentTurnOutstandingArmies: 0,
+  onShowDetail: (x) => {},
+  detailRequestedTerritory: undefined
 };
 
 export const GameContext = React.createContext<IGameContext>(emptyContext);
@@ -52,9 +55,11 @@ export interface IGameContext {
   currentTurn: string;
   currentTurnOutstandingArmies: number;
   selectedTerritory: CountryNameKey | undefined;
+  detailRequestedTerritory: CountryNameKey| undefined;
 }
 
 export interface ITileContext extends IGameContext {
   applyArmies(territoryName: CountryNameKey, selectedArmies: number): void;
-  onClick(territoryName: CountryNameKey): void;
+  onSelect(territoryName: CountryNameKey): void;
+  onShowDetail(territoryName: CountryNameKey | undefined) :void;
 }

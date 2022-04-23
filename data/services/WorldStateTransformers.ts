@@ -2,7 +2,10 @@ import GameMap, { CountryNameKey } from "../models/GameMap";
 import { RoundStepType, TerritoryState } from "../models/GameState";
 import Player from "../models/Player";
 import { getCountryForTerritory as getContinentForTerritory } from "../models/Selectors";
-import { addArmiesToTile, executeArmyMovementAgainstTerritoryStates } from "./UserActions";
+import {
+  addArmiesToTile,
+  executeArmyMovementAgainstTerritoryStates,
+} from "./UserActions";
 
 export type ArmyApplicationSet = {
   playerName: string;
@@ -15,6 +18,7 @@ export interface IWorldMapState {
   currentTurn: string;
   currentPositions: TerritoryState[];
   selectedTerritory: CountryNameKey | undefined;
+  detailRequestedTerritory: CountryNameKey | undefined;
   history: string;
   roundStep: RoundStepType;
   roundStepRemainingPlayerTurns: string[];
@@ -23,13 +27,23 @@ export interface IWorldMapState {
 }
 
 export interface IWorldMapAction {
-  type: "None" | "SelectTile" | "TargetTile" | "ClearSelection" | "LoadInitialState" | "MoveToNextStep";
+  type:
+    | "None"
+    | "SelectTile"
+    | "TargetTile"
+    | "ClearSelection"
+    | "LoadInitialState"
+    | "MoveToNextStep"
+    | "ShowDetail";
   target?: CountryNameKey;
   armiesToApply?: number;
   initialState?: IWorldMapState;
 }
 
-export function worldMapReducer(state: IWorldMapState, action: IWorldMapAction) {
+export function worldMapReducer(
+  state: IWorldMapState,
+  action: IWorldMapAction
+) {
   switch (action.type) {
     case "MoveToNextStep":
       return moveToNextTurn(state);
@@ -42,7 +56,12 @@ export function worldMapReducer(state: IWorldMapState, action: IWorldMapAction) 
         `${state.currentTurn} - Cleared Selection`,
         state.history
       );
-      return { ...state, history: newHistory, selectedTerritory: undefined };
+      return {
+        ...state,
+        history: newHistory,
+        selectedTerritory: undefined,
+        detailRequestedTerritory: undefined,
+      };
     case "SelectTile":
       if (!state.selectedTerritory && action.target) {
         let newHistory = appendEventToHistory(
@@ -57,22 +76,47 @@ export function worldMapReducer(state: IWorldMapState, action: IWorldMapAction) 
         };
       }
       return state;
+    case "ShowDetail":
+      let newHistoryForDetailReq = appendEventToHistory(
+        state.roundCounter,
+        `${state.currentTurn} - Requested detail for ${action.target}`,
+        state.history
+      );
+      return {
+        ...state,
+        history: newHistoryForDetailReq,
+        detailRequestedTerritory: action.target,
+      };
+      return state;
     case "TargetTile":
       if (!action.armiesToApply || !action.target) return state;
-      if (state.selectedTerritory === undefined) return performAddArmies(state, action.target, action.armiesToApply);
+      if (state.selectedTerritory === undefined)
+        return performAddArmies(state, action.target, action.armiesToApply);
 
-      return performAttackOrMove(state, state.selectedTerritory, action.target, action.armiesToApply);
+      return performAttackOrMove(
+        state,
+        state.selectedTerritory,
+        action.target,
+        action.armiesToApply
+      );
   }
   return state;
 }
 
-function appendEventToHistory(round: number, nextEvent: string, previousHistory: string) {
+function appendEventToHistory(
+  round: number,
+  nextEvent: string,
+  previousHistory: string
+) {
   let date = new Date(Date.now()).toISOString();
   return `${round.toString()}\t${date}\t${nextEvent}\n${previousHistory}`;
 }
 
 function moveToNextTurn(state: IWorldMapState): IWorldMapState {
-  if (state.roundStepRemainingPlayerTurns && state.roundStepRemainingPlayerTurns.length) {
+  if (
+    state.roundStepRemainingPlayerTurns &&
+    state.roundStepRemainingPlayerTurns.length
+  ) {
     const nextPlayer = state.roundStepRemainingPlayerTurns[0];
     const remainingSteps = state.roundStepRemainingPlayerTurns.slice(1);
     return {
@@ -83,8 +127,15 @@ function moveToNextTurn(state: IWorldMapState): IWorldMapState {
   }
 
   const newStep =
-    state.roundStep === "Movement" ? "AddArmies" : state.roundStep === "AddArmies" ? "Attack" : "Movement";
-  const newArmyValue: ArmyApplicationSet[] = calculateNewArmiesToAdd(newStep, state);
+    state.roundStep === "Movement"
+      ? "AddArmies"
+      : state.roundStep === "AddArmies"
+      ? "Attack"
+      : "Movement";
+  const newArmyValue: ArmyApplicationSet[] = calculateNewArmiesToAdd(
+    newStep,
+    state
+  );
   const stepReset = state.currentPlayers.map((x) => x.name);
   const newRoundCounter = state.roundCounter + 1;
   const newCurrentTurn = stepReset[0];
@@ -100,15 +151,24 @@ function moveToNextTurn(state: IWorldMapState): IWorldMapState {
   };
 }
 
-function calculateNewArmiesToAdd(newStep: string, state: IWorldMapState): ArmyApplicationSet[] {
+function calculateNewArmiesToAdd(
+  newStep: string,
+  state: IWorldMapState
+): ArmyApplicationSet[] {
   if (newStep === "AddArmies") {
-    const numberOfTerritoriesControlled = calculatePlayerControlledTerritoryCountBonus(state);
+    const numberOfTerritoriesControlled =
+      calculatePlayerControlledTerritoryCountBonus(state);
     const continentOwners = calculateContinentOwnershipBonuses(state);
 
     return state.currentPlayers.map((x) => {
-      const cBonus = continentOwners.find((y) => y.playerName === x.name)?.armiesToAdd ?? 0;
-      const tBonus = numberOfTerritoriesControlled.find((y) => y.playerName === x.name)?.armiesToAdd ?? 0;
-      const previousValue = state.armiesToApply.find((y) => y.playerName === x.name)?.numberOfArmiesRemaining ?? 0;
+      const cBonus =
+        continentOwners.find((y) => y.playerName === x.name)?.armiesToAdd ?? 0;
+      const tBonus =
+        numberOfTerritoriesControlled.find((y) => y.playerName === x.name)
+          ?.armiesToAdd ?? 0;
+      const previousValue =
+        state.armiesToApply.find((y) => y.playerName === x.name)
+          ?.numberOfArmiesRemaining ?? 0;
 
       return {
         playerName: x.name,
@@ -126,11 +186,19 @@ function calculateContinentOwnershipBonuses(state: IWorldMapState) {
       .map((x) => {
         return {
           playerName: x.playerName,
-          continent: getContinentForTerritory(state.currentMap, x.territoryName),
+          continent: getContinentForTerritory(
+            state.currentMap,
+            x.territoryName
+          ),
         };
       })
       .reduce((previousValue, newValue) => {
-        if (newValue && previousValue && newValue.continent && newValue.playerName) {
+        if (
+          newValue &&
+          previousValue &&
+          newValue.continent &&
+          newValue.playerName
+        ) {
           let prevValue = previousValue.get(newValue.continent.name) ?? [];
           if (prevValue.find((x) => x === newValue.playerName) === undefined) {
             prevValue.push(newValue.playerName);
@@ -144,7 +212,9 @@ function calculateContinentOwnershipBonuses(state: IWorldMapState) {
   )
     .filter((x) => x[1].length === 1)
     .map((x) => {
-      const continentValue = state.currentMap.continents.find((y) => y.name === x[0])?.bonusValue ?? 0;
+      const continentValue =
+        state.currentMap.continents.find((y) => y.name === x[0])?.bonusValue ??
+        0;
       return { playerName: x[1][0], armiesToAdd: continentValue };
     });
 }
@@ -179,19 +249,30 @@ function performAttackOrMove(
     target,
     armiesToApply
   );
-  let updatedHistory = appendEventToHistory(state.roundCounter, update, state.history);
-  const baseState = state.roundStep === "Movement" ? moveToNextTurn(state) : state;
+  let updatedHistory = appendEventToHistory(
+    state.roundCounter,
+    update,
+    state.history
+  );
+  const baseState =
+    state.roundStep === "Movement" ? moveToNextTurn(state) : state;
   return {
     ...baseState,
     currentPositions: updatedPositions,
     selectedTerritory: undefined,
+    detailRequestedTerritory: undefined,
     history: updatedHistory,
   };
 }
 
-function performAddArmies(state: IWorldMapState, target: CountryNameKey, armiesToApply: number): IWorldMapState {
+function performAddArmies(
+  state: IWorldMapState,
+  target: CountryNameKey,
+  armiesToApply: number
+): IWorldMapState {
   let remainingArmiesAfterAdd: number =
-    (state.armiesToApply.find((x) => x.playerName === state.currentTurn)?.numberOfArmiesRemaining ?? 0) - armiesToApply;
+    (state.armiesToApply.find((x) => x.playerName === state.currentTurn)
+      ?.numberOfArmiesRemaining ?? 0) - armiesToApply;
 
   if (remainingArmiesAfterAdd < 0) {
     return {
@@ -204,9 +285,17 @@ function performAddArmies(state: IWorldMapState, target: CountryNameKey, armiesT
     };
   }
 
-  let [update, updatedPositions] = addArmiesToTile(state.currentPositions, target, armiesToApply);
+  let [update, updatedPositions] = addArmiesToTile(
+    state.currentPositions,
+    target,
+    armiesToApply
+  );
 
-  let updatedHistory = appendEventToHistory(state.roundCounter, update, state.history);
+  let updatedHistory = appendEventToHistory(
+    state.roundCounter,
+    update,
+    state.history
+  );
 
   updatedHistory = appendEventToHistory(
     state.roundCounter,
@@ -225,7 +314,9 @@ function performAddArmies(state: IWorldMapState, target: CountryNameKey, armiesT
 
   const shouldMoveToNextTurn = remainingArmiesAfterAdd === 0;
 
-  const baseStateForReturn = shouldMoveToNextTurn ? moveToNextTurn(state) : state;
+  const baseStateForReturn = shouldMoveToNextTurn
+    ? moveToNextTurn(state)
+    : state;
 
   return {
     ...baseStateForReturn,

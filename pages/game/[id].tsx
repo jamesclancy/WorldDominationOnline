@@ -1,12 +1,9 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { useContext, useEffect, useReducer } from "react";
-import { Spinner } from "react-bootstrap";
-import TerritorySelect from "../../components/TerritorySelector";
 import WorldMap from "../../components/WorldMap";
 import { GameContext, IGameContext } from "../../data/models/Contexts";
 import { GameDetail, TerritoryState } from "../../data/models/GameState";
 import Player from "../../data/models/Player";
-import { constructInitialGameContext } from "../../data/client-services/WorldBuilder";
 import { Layout } from "../_layout";
 import PersistanceService from "../../data/services/PersistanceService";
 import { parseSingleValueFromQueryValue } from "../../utilities/UrlUtilities";
@@ -31,7 +28,8 @@ const GameBoard: NextPage<IGameBoardProps> = (
         currentTurnOutstandingArmies: 0,
         selectedTerritory: undefined,
         currentPositions: props.gameMap.currentTerritoryState,
-        currentPlayers: [props.gameMap.player1, props.gameMap.player2]
+        currentPlayers: [props.gameMap.player1, props.gameMap.player2],
+        detailRequestedTerritory: undefined
       }}
     >
        <WorldMap />
