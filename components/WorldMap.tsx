@@ -1,5 +1,14 @@
-import { DefaultButton, IStackTokens, Label, ScrollablePane, Stack, TextField } from "@fluentui/react";
 import { useContext, useEffect, useReducer } from "react";
+import {
+  Button,
+  Col,
+  Container,
+  Form,
+  Nav,
+  Navbar,
+  NavDropdown,
+  Row,
+} from "react-bootstrap";
 import {
   GameContext,
   IGameContext,
@@ -71,68 +80,28 @@ const WorldMap = () => {
     dispatch({ type: "MoveToNextStep" });
   };
 
-  const stackTokens: IStackTokens = { childrenGap: 40 };
-  
   return (
     <WorldMapContext.Provider value={propsToAddToEachTile}>
-      <Stack  className="gamePanel">
-          <svg viewBox="0 40 210 160">
-            {gameContext.currentMap.territories.map((x) => (
-              <NamedTerritoryTile name={x.name} />
-            ))}
-          </svg>
-        <Stack className="bottomControlPanel">
-          
-          <Stack horizontal  tokens={stackTokens}>
-            <Label
-              className={
-                state.roundStep !== "AddArmies"
-                  ? "progressNavbarOff"
-                  : "progressNavbarOn"
-              }
-            >
-              Planning Phase
-            </Label>
-            <Label
-              className={
-                state.roundStep !== "Attack"
-                  ? "progressNavbarOff"
-                  : "progressNavbarOn"
-              }
-            >
-              Attack Phase
-            </Label>
-            <Label
-              className={
-                state.roundStep !== "Movement"
-                  ? "progressNavbarOff"
-                  : "progressNavbarOn"
-              }
-            >
-              Reallocate Phase
-            </Label>
-            <DefaultButton onClick={moveNextStep}>End Turn</DefaultButton>
-          </Stack>
-          <Stack horizontal horizontalAlign="stretch"  tokens={stackTokens}>
-            <div
-              style={{
-                padding:"1erm",
-                flex:1,
-                flexGrow:0.3
-              }}
-            >
-              <WorldMapControlPanel
-                selectedTerritory={state.selectedTerritory}
-                clearSelectedTerritory={clearSelectedTerritory}
-              />
+      <Container fluid>
+        <Row className="gamePanel">
+          <Col>
+            <div>
+              <svg viewBox="0 40 210 160">
+                {gameContext.currentMap.territories.map((x) => (
+                  <NamedTerritoryTile name={x.name} />
+                ))}
+              </svg>
             </div>
-            <div style={{flex:4, flexGrow:1}}>
-              <h5>Event Log</h5>
-              <TextField multiline value={state.history} />
-            </div>
-          </Stack>
-        </Stack>
-      </Stack>
+          </Col>
+        </Row>
+      </Container>
+      <WorldMapControlPanel
+            selectedTerritory={state.selectedTerritory}
+            clearSelectedTerritory={clearSelectedTerritory}
+            roundStep={state.roundStep}
+            history={state.history}
+            moveNextStep={moveNextStep}
+       />
     </WorldMapContext.Provider>
   );
 };

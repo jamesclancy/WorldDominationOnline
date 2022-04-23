@@ -1,11 +1,14 @@
 import type { NextPage } from 'next'
-import { Layout } from './_layout'
+import { GeneralPageLayout, Layout } from './_layout'
 
 
-const Home: NextPage = () => {
+const About: NextPage = () => {
   return (
-    <Layout />
+    <GeneralPageLayout
+        title='A Poorly Thought Out Test of NextJS'
+        leadInText="This is probably not an appropriate project ot test using NextJS with."
+    />
   )
 }
 
-export default Home
+export default About

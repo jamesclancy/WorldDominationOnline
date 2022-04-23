@@ -1,12 +1,26 @@
-import { DefaultButton, Stack } from "@fluentui/react";
 import { useContext } from "react";
+import {
+  Button,
+  Row,
+  Nav,
+  Navbar,
+  NavDropdown,
+  Container,
+} from "react-bootstrap";
 import { ITileContext, WorldMapContext } from "../data/models/Contexts";
-import { CountryNameKey, TerritoryPotentialActions } from "../data/models/GameMap";
+import {
+  CountryNameKey,
+  TerritoryPotentialActions,
+} from "../data/models/GameMap";
+import { RoundStepType } from "../data/models/GameState";
 import { getPotentialActionsForTerritory } from "../data/models/Selectors";
 
 interface IWorldMapControlPanelProps {
   selectedTerritory: string | undefined;
+  roundStep: RoundStepType;
+  history: string;
   clearSelectedTerritory: () => void;
+  moveNextStep: () => void;
 }
 
 interface IPotentialActionSet {
@@ -22,11 +36,11 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
       case "Select":
         return { iconName: "select" };
       case "Attack":
-        return  { iconName: "target" };
+        return { iconName: "target" };
       case "Move":
-        return  { iconName: "move" };
+        return { iconName: "move" };
       case "AddArmies":
-        return  { iconName: "add" }; 
+        return { iconName: "add" };
     }
   };
 
@@ -42,20 +56,63 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
     .map((x) => {
       let click = () => worldMapContext.onClick(x.name);
       let text = `${x.name}-${x.action}`;
-      return <DefaultButton onClick={click} text={text} iconProps={icon(x.action)} />;
+      return <NavDropdown.Item onClick={click}>{text}</NavDropdown.Item>;
     });
 
   if (worldMapContext.selectedTerritory !== undefined)
     possibleActions.push(
-      <DefaultButton onClick={props.clearSelectedTerritory} text="Clear Selection" iconProps={{iconName:"clean"}}></DefaultButton>
+      <>
+        <NavDropdown.Divider />
+        <NavDropdown.Item onClick={props.clearSelectedTerritory}>
+          Clear Selection
+        </NavDropdown.Item>
+      </>
     );
 
-  let movements = <Stack>{possibleActions}</Stack>;
+  let movements = <Row>{possibleActions}</Row>;
 
   return (
     <>
-      <h5>Current Turn: {worldMapContext.currentTurn}</h5>
-      {movements}
+      <Navbar fixed="bottom">
+        <Container fluid>
+          <Navbar.Toggle />
+          <Navbar.Collapse>
+            <Nav
+              className="me-auto my-2 my-lg-0"
+              navbarScroll
+              style={{ backgroundColor: "#fff" }}
+            >
+              {" "}
+              <Navbar.Brand style={{ backgroundColor: "#fff" }}>
+                {worldMapContext.currentTurn}'s Turn
+              </Navbar.Brand>
+              <Nav.Link active={worldMapContext.roundStep === "AddArmies"}>
+                Planning Phase
+              </Nav.Link>
+              <Nav.Link active={worldMapContext.roundStep === "Attack"}>
+                Attack Phase
+              </Nav.Link>
+              <Nav.Link active={worldMapContext.roundStep === "Movement"}>
+                Reallocate Phase
+              </Nav.Link>
+            </Nav>
+            <Nav>
+              <NavDropdown
+                title="Potential Moves"
+                drop={"up"}
+                style={{ backgroundColor: "#fff" }}>
+                {movements}
+              </NavDropdown>
+              <Nav.Link
+                onClick={props.moveNextStep}
+                style={{ backgroundColor: "#fff" }}
+              >
+                Move to Next Step
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
     </>
   );
 };

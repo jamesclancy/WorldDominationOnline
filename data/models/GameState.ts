@@ -16,4 +16,47 @@ export type GameState = {
   onClickTerritory(territoryName: string): void;
 };
 
-export type RoundStepType = "AddArmies" | "Attack" | "Movement";
+export interface MapDefinition {
+  id: string;
+  name: string;
+}
+
+export interface GameSummary {
+  id: string;
+  currentTurnStep: RoundStepType;
+  currentTurnCount: number;
+  map: MapDefinition;
+  winningPlayer?: Player;
+  currentTurnPlayer?: Player;
+  player1: Player;
+  player2: Player;
+  startDate: string;
+  updatedDate: string;
+}
+
+export interface GameDetail {
+  id: string;
+  currentTurnStep: RoundStepType;
+  currentTurnCount: number;
+  map: MapDefinition;
+  winningPlayer?: Player;
+  player1: Player;
+  player2: Player;
+  startDate: Date;
+  updatedDate: Date;
+
+  currentMap: GameMap;
+  currentTerritoryState: TerritoryState[];
+  currentTurn: Player;
+}
+
+
+const possibleRoundStepTypes = ["AddArmies", "Attack", "Movement", "InvalidValue", "GameOver"];
+
+export function toRoundStepType(valueToTry: string) : RoundStepType {
+  const contIndex = possibleRoundStepTypes.findIndex((x) => x === valueToTry);
+  if (contIndex === -1) return "InvalidValue";
+  return possibleRoundStepTypes[contIndex];
+}
+
+export type RoundStepType = typeof possibleRoundStepTypes[number];

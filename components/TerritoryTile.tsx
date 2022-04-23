@@ -1,5 +1,5 @@
-import { DefaultButton, Dialog, Slider } from "@fluentui/react";
 import { useContext, useEffect, useReducer } from "react";
+import { Button, Form, ModalDialog } from "react-bootstrap";
 import { ITileContext, WorldMapContext } from "../data/models/Contexts";
 import {
   Continent,
@@ -99,7 +99,7 @@ const TerritoryTile = (props: ITerritoryProps) => {
       ) : (
         <>
           <p>Select armies to move.</p>
-          <Slider
+          <Form.Range
             key="slider"
             min={1}
             max={props.possibleArmiesToApply}
@@ -114,12 +114,12 @@ const TerritoryTile = (props: ITerritoryProps) => {
         <h4>Confirm {props.potentialActions}</h4>
         {slider}
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 15 }}>
-          <DefaultButton onClick={togglePopover}>
+          <Button onClick={togglePopover}>
             Cancel
-          </DefaultButton>
-          <DefaultButton onClick={applyArmies}>
+          </Button>
+          <Button onClick={applyArmies}>
             Confirm
-          </DefaultButton>
+          </Button>
         </div>
       </div>
     );
@@ -240,9 +240,9 @@ const TerritoryTile = (props: ITerritoryProps) => {
         ></path>
         {textGroup}
       </g>
-      <Dialog hidden={!state.showPopover}>
+      <ModalDialog hidden={!state.showPopover}>
         {popOverContent()}
-      </Dialog>
+      </ModalDialog>
     </>
   );
 };

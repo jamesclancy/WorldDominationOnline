@@ -3,16 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start-dev-postgresql": "powershell .//start-dev-db-container.ps1",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@fluentui/react": "^8.64.1",
+    "@fontsource/news-cycle": "^4.5.5",
+    "@next-auth/prisma-adapter": "^1.0.3",
+    "@prisma/client": "^3.12.0",
+    "bootstrap": "^5.1.3",
     "next": "12.1.4",
+    "next-auth": "^4.3.2",
     "react": "18.0.0",
-    "react-dom": "18.0.0"
+    "react-bootstrap": "^2.3.0",
+    "react-dom": "18.0.0",
+    "swr": "^1.3.0"
   },
   "devDependencies": {
     "@types/node": "17.0.23",
@@ -20,6 +27,8 @@
     "@types/react-dom": "18.0.0",
     "eslint": "8.13.0",
     "eslint-config-next": "12.1.4",
+    "node-sass": "^7.0.1",
+    "prisma": "^3.12.0",
     "typescript": "4.6.3"
   }
 }

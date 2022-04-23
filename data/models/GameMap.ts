@@ -1,48 +1,80 @@
-export type TerritoryPotentialActions = "None" | "Move" | "Attack" | "Select" | "AddArmies";
-export type ContinentNameKey = "NorthAmerica" | "SouthAmerica" | "Europe" | "Asia" | "Africa" | "Oceania";
-export type CountryNameKey =
-  | "Alaska"
-  | "NorthWesternTerritory"
-  | "Alberta"
-  | "Ontario"
-  | "Quebec"
-  | "WesternUS"
-  | "EasternUS"
-  | "CentralAmerica"
-  | "Greenland"
-  | "Venezuela"
-  | "Brazil"
-  | "Peru"
-  | "Argentina"
-  | "Iceland"
-  | "GreatBritain"
-  | "WesternEurope"
-  | "Scandinavia"
-  | "NorthernEurope"
-  | "SouthernEurope"
-  | "Ukraine"
-  | "NorthAfrica"
-  | "Egypt"
-  | "EastAfrica"
-  | "Congo"
-  | "SouthAfrica"
-  | "Madagascar"
-  | "Afghanistan"
-  | "China"
-  | "Hindustan"
-  | "Irkutsk"
-  | "Japan"
-  | "Kamchatka"
-  | "MiddleEast"
-  | "Mongolia"
-  | "Siam"
-  | "Siberia"
-  | "Ural"
-  | "Yakutsk"
-  | "Indonesia"
-  | "NewGuinea"
-  | "WesternAustralia"
-  | "EasternAustralia";
+export type TerritoryPotentialActions =
+  | "None"
+  | "Move"
+  | "Attack"
+  | "Select"
+  | "AddArmies";
+const continentNames = [
+  "NorthAmerica",
+  "SouthAmerica",
+  "Europe",
+  "Asia",
+  "Africa",
+  "Oceania",
+  "InvalidValue",
+];
+export const toContinentNameKey: (valueToTry: string) => ContinentNameKey = (
+  valueToTry: string
+) => {
+  const contIndex = continentNames.findIndex((x) => x === valueToTry);
+  if (contIndex === -1) return "InvalidValue";
+  return continentNames[contIndex];
+};
+export type ContinentNameKey = typeof continentNames[number];
+const countryNames = [
+  "Alaska",
+  "NorthWesternTerritory",
+  "Alberta",
+  "Ontario",
+  "Quebec",
+  "WesternUS",
+  "EasternUS",
+  "CentralAmerica",
+  "Greenland",
+  "Venezuela",
+  "Brazil",
+  "Peru",
+  "Argentina",
+  "Iceland",
+  "GreatBritain",
+  "WesternEurope",
+  "Scandinavia",
+  "NorthernEurope",
+  "SouthernEurope",
+  "Ukraine",
+  "NorthAfrica",
+  "Egypt",
+  "EastAfrica",
+  "Congo",
+  "SouthAfrica",
+  "Madagascar",
+  "Afghanistan",
+  "China",
+  "Hindustan",
+  "Irkutsk",
+  "Japan",
+  "Kamchatka",
+  "MiddleEast",
+  "Mongolia",
+  "Siam",
+  "Siberia",
+  "Ural",
+  "Yakutsk",
+  "Indonesia",
+  "NewGuinea",
+  "WesternAustralia",
+  "EasternAustralia",
+  "InvalidValue"
+];
+
+export const toCountryNameKey: (valueToTry: string) => CountryNameKey = (
+  valueToTry: string
+) => {
+  const contIndex = countryNames.findIndex((x) => x === valueToTry);
+  if (contIndex === -1) return "InvalidValue";
+  return countryNames[contIndex];
+};
+export type CountryNameKey = typeof countryNames[number];
 
 export type Continent = {
   name: ContinentNameKey;

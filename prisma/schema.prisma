@@ -1,0 +1,165 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model MapRecord {
+  id         String            @id @default(cuid())
+  continents ContinentRecord[]
+  name       String            @unique
+
+  GameRecord GameRecord[]
+  @@map(name: "maps")
+}
+
+model ContinentRecord {
+  id          String            @id @default(cuid())
+  name        String
+  displayName String
+  bonusValue  Int
+  territories TerritoryRecord[]
+  mapId       String
+  map         MapRecord         @relation(fields: [mapId], references: [id])
+
+  @@map(name: "continents")
+}
+
+model TerritoryRecord {
+  id                      String                  @id @default(cuid())
+  name                    String
+  displayText             String
+  value                   Int
+  continentId             String
+  continent               ContinentRecord         @relation(fields: [continentId], references: [id])
+  territoryDestinations   TerritoryBridgeRecord[] @relation("territory_primary")
+  territoryAccessibleFrom TerritoryBridgeRecord[] @relation("territory_destination")
+  pathDef                 String
+  textBoxX                Decimal
+  textBoxY                Decimal
+  textBoxWidth            Decimal
+  textBoxHeight           Decimal
+
+  territoryStates GameTerritoryStateRecord[] @relation("territory_for_state")
+
+
+  @@map(name: "territories")
+}
+
+model TerritoryBridgeRecord {
+  id                   String          @id @default(cuid())
+  primaryTerritoryId   String
+  secondaryTerritoryId String
+  territoryPrimary     TerritoryRecord @relation("territory_primary", fields: [primaryTerritoryId], references: [id])
+  territoryDestination TerritoryRecord @relation("territory_destination", fields: [secondaryTerritoryId], references: [id])
+
+  @@map(name: "territory_bridges")
+}
+
+model PlayerRecord {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  email       String? @unique
+  displayName String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+
+  @@map(name: "players")
+}
+
+model GameRecord {
+  id        String  @id @default(cuid())
+  player1Id String
+  player1   User    @relation("game_player_1", fields: [player1Id], references: [id])
+  player2Id String
+  player2   User    @relation("game_player_2", fields: [player2Id], references: [id])
+  winnerId  String?
+  winner    User?   @relation("game_winner", fields: [winnerId], references: [id])
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map(name: "updated_at")
+
+  currentTurnPlayerId String?
+  currentTurnPlayer   User?   @relation("game_current_turn", fields: [currentTurnPlayerId], references: [id])
+
+  map   MapRecord @relation(fields: [mapId], references: [id])
+  mapId String
+
+  currentTurn     Int    @default(0)
+  currentTurnStep String @default("InvalidValue")
+
+  territoryStates GameTerritoryStateRecord[] @relation("gamme_territory_state")
+
+  @@map(name: "games")
+}
+
+model GameTerritoryStateRecord {
+  id          String          @id @default(cuid())
+  ownerId     String
+  owner       User            @relation("territory_owner", fields: [ownerId], references: [id])
+  territoryId String
+  territory   TerritoryRecord @relation("territory_for_state", fields: [territoryId], references: [id])
+  gameId      String
+  game        GameRecord      @relation("gamme_territory_state", fields: [gameId], references: [id])
+  armies      Int
+
+  @@map(name: "game_territory_states")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  displayName   String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  gamesStarted            GameRecord[] @relation("game_player_1")
+  gamesJoined             GameRecord[] @relation("game_player_2")
+  gamesWon                GameRecord[] @relation("game_winner")
+  gamesCurrentlyWaitingOn GameRecord[] @relation("game_current_turn")
+
+  territoryStates GameTerritoryStateRecord[] @relation("territory_owner")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
