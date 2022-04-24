@@ -1,13 +1,4 @@
-import { Decimal } from "@prisma/client/runtime";
 import prisma from "../../lib/prisma";
-import GameMap, {
-  Continent,
-  Territory,
-  TerritoryBridge,
-  TerritoryPathDefinition,
-  toContinentNameKey,
-  toCountryNameKey,
-} from "../models/GameMap";
 import {
   GameDetail,
   GameSummary,
@@ -225,7 +216,9 @@ const getGameSummariesForUser: (
   return summary;
 };
 
-async function getPotentialOpponentsForPlayer(playerName: string): Promise<string[]> {
+async function getPotentialOpponentsForPlayer(
+  playerName: string
+): Promise<string[]> {
   const availableOpponents = await prisma.user.findMany({
     where: {
       NOT: {
@@ -240,10 +233,108 @@ async function getPotentialOpponentsForPlayer(playerName: string): Promise<strin
   return availableOpponents.map((x) => x.name);
 }
 
-
 async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
+  const findPlayerIdForName = async (playerName: string) =>
+    (
+      await prisma.user.findFirst({
+        where: { name: historicalEvent.playerTurn },
+        select: { id: true },
+      })
+    )?.id;
 
-};
+  const findTerritoryIdForName = async (territoryName: string | undefined) =>
+    territoryName === undefined
+      ? undefined
+      : (
+          await prisma.territoryRecord.findFirst({
+            where: { name: historicalEvent.playerTurn },
+            select: { id: true },
+          })
+        )?.id;
+
+  const playerForEventId = await findPlayerIdForName(
+    historicalEvent.playerTurn
+  );
+  const postEventPlayerId = await findPlayerIdForName(
+    historicalEvent.mewPlayerRoundStep
+  );
+
+  const newSelectedTerritory = await findTerritoryIdForName(
+    historicalEvent.newSelectedTerritory
+  );
+
+  const newEventDetailsToCreate = (
+    await Promise.all(
+      historicalEvent.details.map(async (rec) => {
+        const selectedTerritory = {
+          type: "Selected",
+          territoryId: await findTerritoryIdForName(rec.selectedTerritoryName),
+          playerId: await findPlayerIdForName(rec.selectedTerritoryNewOwner),
+          armies: rec.selectedTerritoryNewArmies,
+        };
+
+        if (
+          selectedTerritory.territoryId === undefined ||
+          selectedTerritory.playerId === undefined
+        )
+          new Error("unable to locate data of some kind");
+
+        if (
+          !rec.targetTerritoryName ||
+          !rec.targetTerritoryNewOwner ||
+          !rec.targetTerritoryNewArmies
+        )
+          return [selectedTerritory];
+
+        const targetTerritory = {
+          type: "Target",
+          territoryId: await findTerritoryIdForName(rec.targetTerritoryName),
+          playerId: await findPlayerIdForName(rec.targetTerritoryNewOwner),
+          armies: rec.targetTerritoryNewArmies,
+        };
+
+        if (
+          targetTerritory.territoryId === undefined ||
+          selectedTerritory.playerId === undefined
+        )
+          new Error("unable to locate data of some kind");
+
+        return [selectedTerritory, targetTerritory] as {
+          type: string;
+          territoryId: string;
+          playerId: string;
+          armies: number;
+        }[];
+      })
+    )
+  ).flatMap((x) => x);
+
+  if (playerForEventId === undefined || postEventPlayerId === undefined)
+    throw new Error("unable to locate user");
+
+  const ev = await prisma.gameEventRecord.create({
+    data: {
+      gameId: gameId,
+      humanReadableDescription: historicalEvent.humanReadableDescription,
+      newRoundStep: historicalEvent.mewPlayerRoundStep,
+      roundCounter: historicalEvent.roundCount,
+      roundStep: historicalEvent.roundStep,
+      playerForEventId: playerForEventId,
+      postEventPlayerId: postEventPlayerId,
+      newSelectedTerritoryId: newSelectedTerritory,
+    },
+  });
+
+  await prisma.gameEventDetail.createMany({
+    data: newEventDetailsToCreate.map((det) => ({
+      gameEventId: ev.id,
+      territoryType: det.type,
+      territoryId: det.territoryId ?? "", // this shouldn't be possible
+      armiesPostEvent: det.armies,
+      territoryPostEventOwnerId: det.playerId ?? "", // this shouldn't be possible
+    })),
+  });
+}
 
 export const PersistanceService = {
   getAllPossibleMaps,
@@ -254,7 +345,7 @@ export const PersistanceService = {
   createGame,
   getGameSummariesForUser,
   getPotentialOpponentsForPlayer,
-  saveGameEvent
+  saveGameEvent,
 };
 
 export default PersistanceService;

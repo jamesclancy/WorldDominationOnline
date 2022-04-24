@@ -70,6 +70,7 @@ export interface HistoricalEvent {
   newSelectedTerritory: CountryNameKey | undefined;
   details: HistoricalEventDetailItem[];
   humanReadableDescription: string;
+  roundStep: RoundStepType;
 }
 
 export interface HistoricalEventDetailItem {
@@ -79,5 +80,4 @@ export interface HistoricalEventDetailItem {
   targetTerritoryName: CountryNameKey | undefined;
   targetTerritoryNewOwner: string | undefined;
   targetTerritoryNewArmies: number | undefined;
-  roundStep: RoundStepType;
 }

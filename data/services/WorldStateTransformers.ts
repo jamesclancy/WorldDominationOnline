@@ -56,6 +56,7 @@ function buildStateHistoryTupleFromStates(
     newSelectedTerritory: newState.selectedTerritory,
     details: details,
     humanReadableDescription: humanReadableDescription,
+    roundStep: previousState.roundStep
   };
   return [newState, historyItem1];
 }

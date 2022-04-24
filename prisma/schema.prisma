@@ -43,8 +43,9 @@ model TerritoryRecord {
   textBoxWidth            Decimal
   textBoxHeight           Decimal
 
-  territoryStates GameTerritoryStateRecord[] @relation("territory_for_state")
-
+  territoryStates         GameTerritoryStateRecord[] @relation("territory_for_state")
+  territorySelectedEvents GameEventRecord[]          @relation("territory_selected_events")
+  territoryEventDetails   GameEventDetail[]          @relation("territory_game_event_details")
 
   @@map(name: "territories")
 }
@@ -57,19 +58,6 @@ model TerritoryBridgeRecord {
   territoryDestination TerritoryRecord @relation("territory_destination", fields: [secondaryTerritoryId], references: [id])
 
   @@map(name: "territory_bridges")
-}
-
-model PlayerRecord {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  email       String? @unique
-  displayName String
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-
-  @@map(name: "players")
 }
 
 model GameRecord {
@@ -95,7 +83,55 @@ model GameRecord {
 
   territoryStates GameTerritoryStateRecord[] @relation("gamme_territory_state")
 
+  gameEvents GameEventRecord[] @relation("gamme_event")
+
+
   @@map(name: "games")
+}
+
+model GameEventRecord {
+  id String @id @default(cuid())
+
+  gameId String
+  game   GameRecord @relation("gamme_event", fields: [gameId], references: [id])
+
+  roundCounter             Int
+  roundStep                String
+  humanReadableDescription String
+
+  playerForEventId String
+  playerForEvent   User   @relation("player_driver_events", fields: [playerForEventId], references: [id])
+
+
+  postEventPlayerId String
+  postEventPlayer   User   @relation("player_preturn_events", fields: [postEventPlayerId], references: [id])
+
+  newRoundStep String
+
+  newSelectedTerritoryId String?
+  newSelectedTerritory   TerritoryRecord? @relation("territory_selected_events", fields: [newSelectedTerritoryId], references: [id])
+
+  details GameEventDetail[] @relation("game_event_details")
+
+  @@map(name: "game_events")
+}
+
+model GameEventDetail {
+  id            String @id @default(cuid())
+  territoryType String
+
+  gameEventId String
+  gameEvent   GameEventRecord @relation("game_event_details", fields: [gameEventId], references: [id])
+
+  territoryId String
+  territory   TerritoryRecord @relation("territory_game_event_details", fields: [territoryId], references: [id])
+
+  armiesPostEvent Int
+
+  territoryPostEventOwnerId String
+  territoryPostEventOwner   User   @relation("player_ownership_post_event_detail", fields: [territoryPostEventOwnerId], references: [id])
+
+  @@map(name: "game_event_details")
 }
 
 model GameTerritoryStateRecord {
@@ -154,6 +190,11 @@ model User {
   gamesCurrentlyWaitingOn GameRecord[] @relation("game_current_turn")
 
   territoryStates GameTerritoryStateRecord[] @relation("territory_owner")
+
+  drivenGameEvents  GameEventRecord[] @relation("player_driver_events")
+  preTurnGameEvents GameEventRecord[] @relation("player_preturn_events")
+
+  postEventOwnershipEventDetail GameEventDetail[] @relation("player_ownership_post_event_detail")
 }
 
 model VerificationToken {
