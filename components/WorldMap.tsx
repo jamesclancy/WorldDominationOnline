@@ -58,7 +58,7 @@ const WorldMap = (props: IWorldMapProps) => {
         .map((x) => x.name)
         .slice(1),
       armiesToApply: [],
-      roundCounter: 0,
+      roundCounter: gameContext.roundCounter,
       detailRequestedTerritory: undefined,
       errorMessage: ""
     };

@@ -45,7 +45,7 @@ model TerritoryRecord {
 
   territoryStates         GameTerritoryStateRecord[] @relation("territory_for_state")
   territorySelectedEvents GameEventRecord[]          @relation("territory_selected_events")
-  territoryEventDetails   GameEventDetail[]          @relation("territory_game_event_details")
+  territoryEventDetails   GameEventDetailRecord[]    @relation("territory_game_event_details")
 
   @@map(name: "territories")
 }
@@ -112,12 +112,12 @@ model GameEventRecord {
   newSelectedTerritoryId String?
   newSelectedTerritory   TerritoryRecord? @relation("territory_selected_events", fields: [newSelectedTerritoryId], references: [id])
 
-  details GameEventDetail[] @relation("game_event_details")
+  details GameEventDetailRecord[] @relation("game_event_details")
 
   @@map(name: "game_events")
 }
 
-model GameEventDetail {
+model GameEventDetailRecord {
   id            String @id @default(cuid())
   territoryType String
 
@@ -195,7 +195,7 @@ model User {
   drivenGameEvents  GameEventRecord[] @relation("player_driver_events")
   preTurnGameEvents GameEventRecord[] @relation("player_preturn_events")
 
-  postEventOwnershipEventDetail GameEventDetail[] @relation("player_ownership_post_event_detail")
+  postEventOwnershipEventDetail GameEventDetailRecord[] @relation("player_ownership_post_event_detail")
 }
 
 model VerificationToken {

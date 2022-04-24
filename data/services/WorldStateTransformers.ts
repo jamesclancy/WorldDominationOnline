@@ -1,7 +1,15 @@
 import GameMap, { CountryNameKey } from "../models/GameMap";
-import { HistoricalEvent, HistoricalEventDetailItem, RoundStepType, TerritoryState } from "../models/GameState";
+import {
+  HistoricalEvent,
+  HistoricalEventDetailItem,
+  RoundStepType,
+  TerritoryState,
+} from "../models/GameState";
 import Player from "../models/Player";
-import { getCountryForTerritory as getContinentForTerritory } from "../models/Selectors";
+import {
+  getCountryForTerritory as getContinentForTerritory,
+  getTerritoryStateFromContext,
+} from "../models/Selectors";
 import {
   addArmiesToTile,
   executeArmyMovementAgainstTerritoryStates,
@@ -56,7 +64,7 @@ function buildStateHistoryTupleFromStates(
     newSelectedTerritory: newState.selectedTerritory,
     details: details,
     humanReadableDescription: humanReadableDescription,
-    roundStep: previousState.roundStep
+    roundStep: previousState.roundStep,
   };
   return [newState, historyItem1];
 }
@@ -100,7 +108,14 @@ export function applyMovementToStateAndGetHistoryDto(
         []
       );
     case "SelectTile":
-      if (!state.selectedTerritory && action.target) {
+      const selectedTerritoryDetail = state.currentPositions.find(
+        (x) => x.territoryName === action.target
+      );
+      if (
+        !state.selectedTerritory &&
+        action.target &&
+        selectedTerritoryDetail
+      ) {
         let newHistory = appendEventToHistory(
           state.roundCounter,
           `${state.currentTurn} - Selected ${action.target}`,
@@ -112,12 +127,17 @@ export function applyMovementToStateAndGetHistoryDto(
           history: newHistory,
           selectedTerritory: action.target,
         };
-        return buildStateHistoryTupleFromStates(
-          state,
-          newStateSt,
-          newHistory,
-          []
-        );
+        const detailItem: HistoricalEventDetailItem = {
+          selectedTerritoryName: action.target,
+          selectedTerritoryNewOwner: state.currentTurn,
+          selectedTerritoryNewArmies: selectedTerritoryDetail.armies,
+          targetTerritoryName: undefined,
+          targetTerritoryNewOwner: undefined,
+          targetTerritoryNewArmies: undefined,
+        };
+        return buildStateHistoryTupleFromStates(state, newStateSt, newHistory, [
+          detailItem,
+        ]);
       }
     case "ShowDetail":
       let newHistoryForDetailReq = appendEventToHistory(
@@ -136,17 +156,17 @@ export function applyMovementToStateAndGetHistoryDto(
       ];
     case "TargetTile":
       if (!action.armiesToApply || !action.target) return [state, undefined];
-      const newStateTT =
-        state.selectedTerritory === undefined
-          ? performAddArmies(state, action.target, action.armiesToApply)
-          : performAttackOrMove(
-              { ...state, roundCounter: state.roundCounter + 1 },
-              state.selectedTerritory,
-              action.target,
-              action.armiesToApply
-            );
 
-      return buildStateHistoryTupleFromStates(state, newStateTT, "", []);
+      if (state.selectedTerritory === undefined) {
+        return performAddArmies(state, action.target, action.armiesToApply);
+      }
+
+      return performAttackOrMove(
+        state,
+        state.selectedTerritory,
+        action.target,
+        action.armiesToApply
+      );
   }
   return [state, undefined];
 }
@@ -157,7 +177,7 @@ function appendEventToHistory(
   previousHistory: string
 ) {
   let date = new Date(Date.now()).toISOString();
-  return `${round.toString()}\t${date}\t${nextEvent}\n${previousHistory}`;
+  return `${round.toString()}\t${date}\t${nextEvent}`;
 }
 
 function moveToNextTurn(state: IWorldMapState): IWorldMapState {
@@ -290,13 +310,31 @@ function performAttackOrMove(
   selectedTerritory: CountryNameKey,
   target: CountryNameKey,
   armiesToApply: number
-) {
+): [IWorldMapState, HistoricalEvent] {
   let [update, updatedPositions] = executeArmyMovementAgainstTerritoryStates(
     state.currentPositions,
     selectedTerritory,
     target,
     armiesToApply
   );
+
+  const targetFromTerritoryDetail = updatedPositions.find(
+    (x) => x.territoryName === selectedTerritory
+  );
+
+  const targetToTerritoryDetail = updatedPositions.find(
+    (x) => x.territoryName === target
+  );
+
+  const detailItem: HistoricalEventDetailItem = {
+    selectedTerritoryName: targetFromTerritoryDetail!.territoryName,
+    selectedTerritoryNewOwner: targetFromTerritoryDetail!.playerName!,
+    selectedTerritoryNewArmies: targetFromTerritoryDetail!.armies,
+    targetTerritoryName: targetToTerritoryDetail!.territoryName,
+    targetTerritoryNewOwner: targetToTerritoryDetail!.playerName!,
+    targetTerritoryNewArmies: targetToTerritoryDetail!.armies,
+  };
+
   let updatedHistory = appendEventToHistory(
     state.roundCounter,
     update,
@@ -304,33 +342,40 @@ function performAttackOrMove(
   );
   const baseState =
     state.roundStep === "Movement" ? moveToNextTurn(state) : state;
-  return {
+  const newState = {
     ...baseState,
     currentPositions: updatedPositions,
     selectedTerritory: undefined,
     detailRequestedTerritory: undefined,
     history: updatedHistory,
   };
+
+  return buildStateHistoryTupleFromStates(state, newState, updatedHistory, [
+    detailItem,
+  ]);
 }
 
 function performAddArmies(
   state: IWorldMapState,
   target: CountryNameKey,
   armiesToApply: number
-): IWorldMapState {
+): [IWorldMapState, HistoricalEvent | undefined] {
   let remainingArmiesAfterAdd: number =
     (state.armiesToApply.find((x) => x.playerName === state.currentTurn)
       ?.numberOfArmiesRemaining ?? 0) - armiesToApply;
 
   if (remainingArmiesAfterAdd < 0) {
-    return {
-      ...state,
-      history: appendEventToHistory(
-        state.roundCounter,
-        `${state.currentPlayers} has ${remainingArmiesAfterAdd} armies remaining to apply.`,
-        state.history
-      ),
-    };
+    return [
+      {
+        ...state,
+        history: appendEventToHistory(
+          state.roundCounter,
+          `${state.currentPlayers} has ${remainingArmiesAfterAdd} armies remaining to apply.`,
+          state.history
+        ),
+      },
+      undefined,
+    ];
   }
 
   let [update, updatedPositions] = addArmiesToTile(
@@ -338,6 +383,19 @@ function performAddArmies(
     target,
     armiesToApply
   );
+
+  const targetFromTerritoryDetail = updatedPositions.find(
+    (x) => x.territoryName === target
+  );
+
+  const detailItem: HistoricalEventDetailItem = {
+    selectedTerritoryName: targetFromTerritoryDetail!.territoryName,
+    selectedTerritoryNewOwner: targetFromTerritoryDetail!.playerName!,
+    selectedTerritoryNewArmies: targetFromTerritoryDetail!.armies,
+    targetTerritoryName: undefined,
+    targetTerritoryNewOwner: undefined,
+    targetTerritoryNewArmies: undefined,
+  };
 
   let updatedHistory = appendEventToHistory(
     state.roundCounter,
@@ -366,11 +424,16 @@ function performAddArmies(
     ? moveToNextTurn(state)
     : state;
 
-  return {
+  const newState = {
     ...baseStateForReturn,
+    roundCounter: state.roundCounter + 1,
     currentPositions: updatedPositions,
     selectedTerritory: undefined,
     history: updatedHistory,
     armiesToApply: remainingArmies,
   };
+
+  return buildStateHistoryTupleFromStates(state, newState, updatedHistory, [
+    detailItem,
+  ]);
 }

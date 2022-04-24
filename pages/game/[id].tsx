@@ -29,7 +29,8 @@ const GameBoard: NextPage<IGameBoardProps> = (
         selectedTerritory: undefined,
         currentPositions: props.gameMap.currentTerritoryState,
         currentPlayers: [props.gameMap.player1, props.gameMap.player2],
-        detailRequestedTerritory: undefined
+        detailRequestedTerritory: undefined,
+        roundCounter: props.gameMap.currentTurnCount
       }}
     >
        <WorldMap gameId={props.gameId}/>

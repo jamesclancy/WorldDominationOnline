@@ -1,5 +1,5 @@
 import internal from "stream";
-import { HistoricalEvent, RoundStepType, TerritoryState } from "./GameState";
+import { GameSummary, HistoricalEvent, RoundStepType, TerritoryState } from "./GameState";
 import Player from "./Player";
 
 export interface CreateGameRequest {
@@ -34,4 +34,9 @@ export interface RecentGameEventResponse {
   UpdatedTerritoryStates: TerritoryState[];
 
   eventDetails: HistoricalEvent[]
+}
+
+export interface GameSummariesForUserResponse {
+  type: 'GameSummariesForUserResponse';
+  gameSummaries:GameSummary[];
 }

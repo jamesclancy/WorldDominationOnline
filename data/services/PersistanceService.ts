@@ -1,8 +1,10 @@
 import prisma from "../../lib/prisma";
+import GameMap from "../models/GameMap";
 import {
   GameDetail,
   GameSummary,
   HistoricalEvent,
+  HistoricalEventDetailItem,
   MapDefinition,
   TerritoryState,
 } from "../models/GameState";
@@ -43,10 +45,12 @@ const getGameSummary: (gameId: string) => Promise<GameSummary | null> = async (
 const getGameStates: (
   gameId: string
 ) => Promise<TerritoryState[] | null> = async (gameId: string) => {
+  const whereClause = {
+    gameId: gameId,
+  };
+
   const availableMaps = await prisma.gameTerritoryStateRecord.findMany({
-    where: {
-      gameId: gameId,
-    },
+    where: whereClause,
     select: getGameStateSelectQueryDefinition,
   });
 
@@ -278,7 +282,123 @@ async function getGameEvents(
   let territoryStates: TerritoryState[] = [];
   let historicalEvents: HistoricalEvent[] = [];
 
-  if (game!.currentTurn <= startAt) {
+  if (game!.currentTurn >= startAt) {
+    historicalEvents = (
+      await prisma.gameEventRecord.findMany({
+        where: {
+          AND: {
+            gameId: gameId,
+            roundCounter: {
+              gt: startAt,
+            },
+          },
+        },
+        select: {
+          postEventPlayer: {
+            select: {
+              name: true,
+              displayName: true,
+            },
+          },
+          playerForEvent: {
+            select: {
+              name: true,
+              displayName: true,
+            },
+          },
+          newSelectedTerritory: {
+            select: {
+              name: true,
+            },
+          },
+          newRoundStep: true,
+          roundCounter: true,
+          humanReadableDescription: true,
+          roundStep: true,
+          details: {
+            select: {
+              territory: { select: { name: true } },
+              armiesPostEvent: true,
+              territoryType: true,
+              territoryPostEventOwner: {
+                select: {
+                  name: true,
+                  displayName: true,
+                },
+              },
+            },
+          },
+        },
+      })
+    ).map((ev) => {
+      let details: HistoricalEventDetailItem[] = [];
+      var selectedTerritory = ev.details.find(
+        (x) => x.territoryType === "Selected"
+      );
+
+      var targetTerritory = ev.details.find(
+        (x) => x.territoryType === "Target"
+      );
+
+      if (selectedTerritory != undefined) {
+        const detail: HistoricalEventDetailItem = {
+          selectedTerritoryName: selectedTerritory.territory.name,
+          selectedTerritoryNewOwner:
+            selectedTerritory.territoryPostEventOwner.name,
+          selectedTerritoryNewArmies: selectedTerritory.armiesPostEvent,
+          targetTerritoryName: targetTerritory?.territory.name,
+          targetTerritoryNewOwner:
+            targetTerritory?.territoryPostEventOwner.name,
+          targetTerritoryNewArmies: targetTerritory?.armiesPostEvent,
+        };
+
+        details.push(detail);
+      }
+
+      const historicalEvent: HistoricalEvent = {
+        playerTurn: ev.playerForEvent.name,
+        roundCount: ev.roundCounter,
+        newPlayerTurn: ev.postEventPlayer.name,
+        mewPlayerRoundStep: ev.newRoundStep,
+        newSelectedTerritory: ev.newSelectedTerritory?.name,
+        details: details,
+        humanReadableDescription: ev.humanReadableDescription,
+        roundStep: ev.roundStep,
+      };
+
+      return historicalEvent;
+    });
+
+    const territoriesOfInterest: string[] = Array.from(
+      new Set(
+        historicalEvents.flatMap((x) =>
+          x.details.flatMap((x) =>
+            x.targetTerritoryName
+              ? [x.selectedTerritoryName, x.targetTerritoryName]
+              : [x.selectedTerritoryName]
+          )
+        )
+      )
+    );
+
+    const availableMaps = await prisma.gameTerritoryStateRecord.findMany({
+      where: {
+        AND: {
+          gameId: gameId,
+          territory: {
+            name: {
+              in: territoriesOfInterest,
+            },
+          },
+        },
+      },
+      select: getGameStateSelectQueryDefinition,
+    });
+
+    if (availableMaps !== null)
+      territoryStates = availableMaps.map((x) =>
+        mapQueryResultToTerritoryState(x)
+      );
   }
 
   const currentPlayer = {
@@ -301,7 +421,7 @@ async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
     historicalEvent.playerTurn
   );
   const postEventPlayerId = await findPlayerIdForName(
-    historicalEvent.mewPlayerRoundStep
+    historicalEvent.newPlayerTurn
   );
 
   const newSelectedTerritory = await findTerritoryIdForName(
@@ -398,7 +518,7 @@ async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
     });
   }
 
-  await prisma.gameEventDetail.createMany({
+  await prisma.gameEventDetailRecord.createMany({
     data: newEventDetailsToCreate.map((det) => ({
       gameEventId: ev.id,
       territoryType: det.type,

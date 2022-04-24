@@ -17,6 +17,7 @@ const emptyContext: IGameContext = {
   currentPositions: [],
   currentTurn: "Player 1",
   roundStep: "Attack",
+  roundCounter:0,
   selectedTerritory: undefined,
   currentTurnOutstandingArmies: 0,
   detailRequestedTerritory: undefined
@@ -33,6 +34,7 @@ const emptyMapContext: ITileContext = {
     { name: "Player 1", displayName: "Player 1" },
     { name: "Player 2", displayName: "Player 2" },
   ],
+  roundCounter:0,
   currentPositions: [],
   currentTurn: "Player 1",
   roundStep: "Movement",
@@ -48,6 +50,7 @@ export const GameContext = React.createContext<IGameContext>(emptyContext);
 export const WorldMapContext = React.createContext<ITileContext>(emptyMapContext);
 
 export interface IGameContext {
+  roundCounter: number;
   currentMap: GameMap;
   roundStep: RoundStepType;
   currentPlayers: [Player, Player];

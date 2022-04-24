@@ -28,10 +28,10 @@ const Home: NextPage = () => {
           showCompletedGames
         );
 
-        if (typeof games === "string") {
+        if (games.type == "FailureReport") {
           setGameList([]);
         } else {
-          setGameList(games);
+          setGameList(games.gameSummaries);
         }
       };
 

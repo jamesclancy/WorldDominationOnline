@@ -19,10 +19,11 @@ export default async function handler(
   switch (subPage) {
     case "event":
       await handleEventsRequest(id, numberValue, req, res);
-      break;
+      return;
     default:
-      res.status(404);
+      break;
   }
+  res.status(404);
 }
 
 async function handleEventsRequest(
@@ -58,7 +59,9 @@ async function handleEventsRequest(
       UpdatedTerritoryStates: updatedTerritoryStates,
       eventDetails: historicalEvents
     };
+
     res.json(returnValue);
+    return;
   }
 
   res.json({ type: "FailureReport", failureMessage: "NO" });
@@ -66,13 +69,15 @@ async function handleEventsRequest(
 
 function parseSlug(
   req: undefined | string[] | string
-): [id: string, subPage: string, numbericValue: number | undefined] {
+): [id: string, subPage: string, numericValue: number | undefined] {
   if (req !== undefined) {
     if (typeof req === "string" || req.length === 1)
       return [req[0], "index", undefined];
     if (req.length === 2) return [req[0], req[1], undefined];
-    if (req.length === 3 && Number.isInteger(req[2]))
-      return [req[0], req[1], Number(req[2])];
+    if (req.length === 3) {
+      const thirdField = req[2];
+      return [req[0], req[1], Number(thirdField)];
+    }
   }
   return ["unknown", "error", undefined];
 }
