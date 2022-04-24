@@ -1,5 +1,6 @@
-import { useContext, useEffect, useReducer } from "react";
-import { Col, Container, Row } from "react-bootstrap";
+import { useContext, useEffect, useState } from "react";
+import { Col, Container, Row, Toast, ToastContainer } from "react-bootstrap";
+import { gameService } from "../data/client-services/GameService";
 import {
   GameContext,
   IGameContext,
@@ -7,10 +8,10 @@ import {
   WorldMapContext,
 } from "../data/models/Contexts";
 import { CountryNameKey } from "../data/models/GameMap";
-import { RoundStepType } from "../data/models/GameState";
 import {
+  applyMovementToStateAndGetHistoryDto,
+  IWorldMapAction,
   IWorldMapState,
-  worldMapReducer,
 } from "../data/services/WorldStateTransformers";
 import { NamedTerritoryTile } from "./TerritoryTile";
 
@@ -39,10 +40,12 @@ const WorldMap = (props: IWorldMapProps) => {
     detailRequestedTerritory: undefined,
   };
 
-  let [state, dispatch] = useReducer(worldMapReducer, initialState);
+  const [state, setState] = useState<IWorldMapState>(initialState);
+  const [showErrorToast, setShowErrorToast] = useState(false);
 
   useEffect(() => {
     const loadedState: IWorldMapState = {
+      gameId: props.gameId,
       currentMap: gameContext.currentMap,
       currentPlayers: gameContext.currentPlayers,
       currentTurn: gameContext.currentPlayers[0].name,
@@ -57,26 +60,48 @@ const WorldMap = (props: IWorldMapProps) => {
       roundCounter: 0,
       detailRequestedTerritory: undefined,
     };
-    dispatch({ type: "LoadInitialState", initialState: loadedState });
-  }, [gameContext]);
+    setState(loadedState);
+  }, [gameContext, props.gameId]);
 
-  let applyArmies = (name: CountryNameKey, selectedArmies: number) => {
-    dispatch({
+  async function dispatchEventAndLogToSever(action: IWorldMapAction) {
+    const [newState, historyItem] = applyMovementToStateAndGetHistoryDto(
+      state,
+      action
+    );
+
+    if (historyItem) {
+      const saveEvent = await gameService.addGameEvent(
+        state.gameId,
+        historyItem
+      );
+
+      if (saveEvent.type === "FailureReport") {
+        setState({ ...state, errorMessage: saveEvent.failureMessage });
+        setShowErrorToast(true);
+        return;
+      }
+    }
+
+    setState({ ...newState, errorMessage: "" });
+  }
+
+  let applyArmies = async (name: CountryNameKey, selectedArmies: number) => {
+    await dispatchEventAndLogToSever({
       type: "TargetTile",
       armiesToApply: selectedArmies,
       target: name,
     });
   };
 
-  let showDetail = (name: CountryNameKey | undefined) => {
-    dispatch({
+  let showDetail = async (name: CountryNameKey | undefined) => {
+    await dispatchEventAndLogToSever({
       type: "ShowDetail",
       target: name,
     });
   };
 
-  let trySelectTerritory = (name: CountryNameKey) => {
-    dispatch({ type: "SelectTile", target: name });
+  let trySelectTerritory = async (name: CountryNameKey) => {
+    await dispatchEventAndLogToSever({ type: "SelectTile", target: name });
   };
 
   let propsToAddToEachTile: ITileContext = {
@@ -94,19 +119,31 @@ const WorldMap = (props: IWorldMapProps) => {
     onShowDetail: showDetail,
   };
 
-  let clearSelectedTerritory = () => {
-    dispatch({ type: "ClearSelection" });
+  let clearSelectedTerritory = async () => {
+    await dispatchEventAndLogToSever({ type: "ClearSelection" });
   };
 
-  let moveNextStep = () => {
-    dispatch({ type: "MoveToNextStep" });
+  let moveNextStep = async () => {
+    await dispatchEventAndLogToSever({ type: "MoveToNextStep" });
   };
+
+  let ErrorToast = () => (
+    <ToastContainer className="p-3" position={"middle-center"}>
+      <Toast show={showErrorToast} bg="warning" onClose={() => setShowErrorToast(false)} delay={5000} autohide>
+        <Toast.Header>
+          <strong className="me-auto">Error Occurred Saving Event</strong>
+        </Toast.Header>
+        <Toast.Body>{state.errorMessage}</Toast.Body>
+      </Toast>
+    </ToastContainer>
+  );
 
   return (
     <WorldMapContext.Provider value={propsToAddToEachTile}>
       <Container fluid>
         <Row className="gamePanel">
           <Col>
+            {state.errorMessage && <ErrorToast />}
             <div>
               <svg viewBox="0 40 210 160">
                 {gameContext.currentMap.territories.map((x) => (

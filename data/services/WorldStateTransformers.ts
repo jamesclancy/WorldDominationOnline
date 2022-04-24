@@ -1,6 +1,5 @@
-import { gameService } from "../client-services/GameService";
 import GameMap, { CountryNameKey } from "../models/GameMap";
-import { RoundStepType, TerritoryState } from "../models/GameState";
+import { HistoricalEvent, HistoricalEventDetailItem, RoundStepType, TerritoryState } from "../models/GameState";
 import Player from "../models/Player";
 import { getCountryForTerritory as getContinentForTerritory } from "../models/Selectors";
 import {
@@ -26,26 +25,7 @@ export interface IWorldMapState {
   roundStepRemainingPlayerTurns: string[];
   armiesToApply: ArmyApplicationSet[];
   roundCounter: number;
-}
-
-export interface HistoricalEvent {
-  playerTurn: string;
-  roundCount: number;
-  newPlayerTurn: string;
-  mewPlayerRoundStep: RoundStepType;
-  newSelectedTerritory: CountryNameKey | undefined;
-  details: HistoricalEventDetailItem[];
-  humanReadableDescription: string;
-}
-
-export interface HistoricalEventDetailItem {
-  selectedTerritoryName: CountryNameKey;
-  selectedTerritoryNewOwner: string;
-  selectedTerritoryNewArmies: number;
-  targetTerritoryName: CountryNameKey | undefined;
-  targetTerritoryNewOwner: string | undefined;
-  targetTerritoryNewArmies: number | undefined;
-  roundStep: RoundStepType;
+  errorMessage: string;
 }
 
 export interface IWorldMapAction {
@@ -60,20 +40,6 @@ export interface IWorldMapAction {
   target?: CountryNameKey;
   armiesToApply?: number;
   initialState?: IWorldMapState;
-}
-
-export function worldMapReducer(
-  state: IWorldMapState,
-  action: IWorldMapAction
-) : IWorldMapState {
-  const [newState, historyItem] = performMovementAndGetResult(state, action);
-
-  if (historyItem) console.log(historyItem);
-  else console.log("no");
-
-  //await gameService.addHistoryToGame(state.gameId, historyItem);
-
-  return newState;
 }
 
 function buildStateHistoryTupleFromStates(
@@ -94,7 +60,7 @@ function buildStateHistoryTupleFromStates(
   return [newState, historyItem1];
 }
 
-function performMovementAndGetResult(
+export function applyMovementToStateAndGetHistoryDto(
   state: IWorldMapState,
   action: IWorldMapAction
 ): [IWorldMapState, HistoricalEvent | undefined] {

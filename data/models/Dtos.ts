@@ -7,9 +7,15 @@ export interface CreateGameRequest {
 }
 
 export interface CreateGameResponse {
-  gameId: string
+  type: 'CreateGameResponse';
+  gameId: string;
 }
 
 export interface FailureReport {
+  type: 'FailureReport';
   failureMessage: string;
+}
+
+export interface AddGameEventResponse {
+  type: 'AddGameEventResponse';
 }

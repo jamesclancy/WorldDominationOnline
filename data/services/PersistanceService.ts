@@ -11,6 +11,7 @@ import GameMap, {
 import {
   GameDetail,
   GameSummary,
+  HistoricalEvent,
   MapDefinition,
   TerritoryState,
 } from "../models/GameState";
@@ -239,6 +240,11 @@ async function getPotentialOpponentsForPlayer(playerName: string): Promise<strin
   return availableOpponents.map((x) => x.name);
 }
 
+
+async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
+
+};
+
 export const PersistanceService = {
   getAllPossibleMaps,
   getGameSummary,
@@ -248,6 +254,7 @@ export const PersistanceService = {
   createGame,
   getGameSummariesForUser,
   getPotentialOpponentsForPlayer,
+  saveGameEvent
 };
 
 export default PersistanceService;

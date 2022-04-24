@@ -1,9 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { GameSummary } from "../../../data/models/GameState";
+import { AddGameEventResponse, FailureReport } from "../../../data/models/Dtos";
+import { GameSummary, HistoricalEvent } from "../../../data/models/GameState";
 import PersistanceService from "../../../data/services/PersistanceService";
 
-type Data = GameSummary[] | null;
-
+type Data = AddGameEventResponse | FailureReport;
+type InputTypes = HistoricalEvent | undefined;
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,18 +12,30 @@ export default async function handler(
 ) {
   const [id, subPage] = parseSlug(req.query.slugs);
 
-  switch(subPage) {
-    case "games":
-      await gameResultsForUser(id, res);
+  switch (subPage) {
+    case "event":
+      await handleEventsRequest(id, req, res);
       break;
     default:
       res.status(404);
   }
 }
 
-async function gameResultsForUser(id: string, res: NextApiResponse<Data> ) {
-  var games = await PersistanceService.getGameSummariesForUser(id);
-  res.json(games);
+async function handleEventsRequest(
+  id: string,
+  req: NextApiRequest,
+  res: NextApiResponse<Data>
+) {
+  if (req.method === "POST") {
+    const historicalEventToAdd = req.body as HistoricalEvent;
+    
+    await PersistanceService.saveGameEvent(id, historicalEventToAdd);
+    
+    res.json({ type: "AddGameEventResponse" });
+    return;
+  }
+
+  res.json({ type: "FailureReport", failureMessage: "NO" });
 }
 
 function parseSlug(

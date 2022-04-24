@@ -60,3 +60,24 @@ export function toRoundStepType(valueToTry: string) : RoundStepType {
 }
 
 export type RoundStepType = typeof possibleRoundStepTypes[number];
+
+
+export interface HistoricalEvent {
+  playerTurn: string;
+  roundCount: number;
+  newPlayerTurn: string;
+  mewPlayerRoundStep: RoundStepType;
+  newSelectedTerritory: CountryNameKey | undefined;
+  details: HistoricalEventDetailItem[];
+  humanReadableDescription: string;
+}
+
+export interface HistoricalEventDetailItem {
+  selectedTerritoryName: CountryNameKey;
+  selectedTerritoryNewOwner: string;
+  selectedTerritoryNewArmies: number;
+  targetTerritoryName: CountryNameKey | undefined;
+  targetTerritoryNewOwner: string | undefined;
+  targetTerritoryNewArmies: number | undefined;
+  roundStep: RoundStepType;
+}
