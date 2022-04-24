@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { AddGameEventResponse, FailureReport } from "../../../data/models/Dtos";
-import { GameSummary, HistoricalEvent } from "../../../data/models/GameState";
+import { HistoricalEvent } from "../../../data/models/GameState";
 import PersistanceService from "../../../data/services/PersistanceService";
 
 type Data = AddGameEventResponse | FailureReport;

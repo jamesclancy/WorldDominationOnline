@@ -38,6 +38,7 @@ const WorldMap = (props: IWorldMapProps) => {
     armiesToApply: [],
     roundCounter: 0,
     detailRequestedTerritory: undefined,
+    errorMessage: ""
   };
 
   const [state, setState] = useState<IWorldMapState>(initialState);
@@ -59,6 +60,7 @@ const WorldMap = (props: IWorldMapProps) => {
       armiesToApply: [],
       roundCounter: 0,
       detailRequestedTerritory: undefined,
+      errorMessage: ""
     };
     setState(loadedState);
   }, [gameContext, props.gameId]);
