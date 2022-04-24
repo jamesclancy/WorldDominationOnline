@@ -1,4 +1,6 @@
-import { TerritoryState } from "./GameState";
+import internal from "stream";
+import { HistoricalEvent, RoundStepType, TerritoryState } from "./GameState";
+import Player from "./Player";
 
 export interface CreateGameRequest {
   mapId: string;
@@ -18,4 +20,18 @@ export interface FailureReport {
 
 export interface AddGameEventResponse {
   type: 'AddGameEventResponse';
+}
+
+
+export interface RecentGameEventResponse {
+  type: 'RecentGameEventResponse';
+  startingRoundCount: number;
+
+  CurrentPlayerTurn: Player | undefined;
+  CurrentTurn: number;
+  CurrentTurnRoundStep: RoundStepType;
+
+  UpdatedTerritoryStates: TerritoryState[];
+
+  eventDetails: HistoricalEvent[]
 }

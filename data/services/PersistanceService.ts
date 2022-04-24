@@ -6,6 +6,7 @@ import {
   MapDefinition,
   TerritoryState,
 } from "../models/GameState";
+import Player from "../models/Player";
 import {
   mapQueryResultToGameMap,
   mapQueryResultToGameSummary,
@@ -233,25 +234,69 @@ async function getPotentialOpponentsForPlayer(
   return availableOpponents.map((x) => x.name);
 }
 
+const findPlayerIdForName = async (playerName: string) =>
+  (
+    await prisma.user.findFirst({
+      where: { name: playerName },
+      select: { id: true },
+    })
+  )?.id;
+
+const findTerritoryIdForName = async (territoryName: string | undefined) =>
+  territoryName === undefined
+    ? undefined
+    : (
+        await prisma.territoryRecord.findFirst({
+          where: { name: territoryName },
+          select: { id: true },
+        })
+      )?.id;
+
+async function getGameEvents(
+  gameId: string,
+  startAt: number
+): Promise<
+  [
+    currentPlayer: Player,
+    currentTurn: number,
+    currentRoundStep: string,
+    updatedTerritoryStates: TerritoryState[],
+    historicalEvents: HistoricalEvent[]
+  ]
+> {
+  const game = await prisma.gameRecord.findUnique({
+    where: { id: gameId },
+    select: {
+      currentTurn: true,
+      currentTurnStep: true,
+      currentTurnPlayer: true,
+    },
+  });
+
+  if (game === undefined) throw new Error("Unable to find game");
+
+  let territoryStates: TerritoryState[] = [];
+  let historicalEvents: HistoricalEvent[] = [];
+
+  if (game!.currentTurn <= startAt) {
+  }
+
+  const currentPlayer = {
+    name: game!.currentTurnPlayer!.name,
+    displayName:
+      game!.currentTurnPlayer!.displayName ?? game!.currentTurnPlayer!.name,
+  };
+
+  return [
+    currentPlayer,
+    game!.currentTurn,
+    game!.currentTurnStep,
+    territoryStates,
+    historicalEvents,
+  ];
+}
+
 async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
-  const findPlayerIdForName = async (playerName: string) =>
-    (
-      await prisma.user.findFirst({
-        where: { name: historicalEvent.playerTurn },
-        select: { id: true },
-      })
-    )?.id;
-
-  const findTerritoryIdForName = async (territoryName: string | undefined) =>
-    territoryName === undefined
-      ? undefined
-      : (
-          await prisma.territoryRecord.findFirst({
-            where: { name: historicalEvent.playerTurn },
-            select: { id: true },
-          })
-        )?.id;
-
   const playerForEventId = await findPlayerIdForName(
     historicalEvent.playerTurn
   );
@@ -312,6 +357,17 @@ async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
   if (playerForEventId === undefined || postEventPlayerId === undefined)
     throw new Error("unable to locate user");
 
+  await prisma.gameRecord.update({
+    where: {
+      id: gameId,
+    },
+    data: {
+      currentTurnPlayerId: postEventPlayerId,
+      currentTurn: historicalEvent.roundCount,
+      currentTurnStep: historicalEvent.mewPlayerRoundStep,
+    },
+  });
+
   const ev = await prisma.gameEventRecord.create({
     data: {
       gameId: gameId,
@@ -324,6 +380,23 @@ async function saveGameEvent(gameId: string, historicalEvent: HistoricalEvent) {
       newSelectedTerritoryId: newSelectedTerritory,
     },
   });
+
+  if (newEventDetailsToCreate.length === 0) return;
+
+  for (const ev of newEventDetailsToCreate) {
+    await prisma.gameTerritoryStateRecord.updateMany({
+      where: {
+        AND: {
+          territoryId: ev.territoryId,
+          gameId: gameId,
+        },
+      },
+      data: {
+        armies: ev.armies,
+        ownerId: ev.playerId,
+      },
+    });
+  }
 
   await prisma.gameEventDetail.createMany({
     data: newEventDetailsToCreate.map((det) => ({
@@ -346,6 +419,7 @@ export const PersistanceService = {
   getGameSummariesForUser,
   getPotentialOpponentsForPlayer,
   saveGameEvent,
+  getGameEvents,
 };
 
 export default PersistanceService;

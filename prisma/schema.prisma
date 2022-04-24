@@ -98,6 +98,7 @@ model GameEventRecord {
   roundCounter             Int
   roundStep                String
   humanReadableDescription String
+  createdAt                DateTime @default(now()) @map(name: "created_at")
 
   playerForEventId String
   playerForEvent   User   @relation("player_driver_events", fields: [playerForEventId], references: [id])
