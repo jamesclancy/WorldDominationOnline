@@ -27,11 +27,11 @@ export interface RecentGameEventResponse {
   type: 'RecentGameEventResponse';
   startingRoundCount: number;
 
-  CurrentPlayerTurn: Player | undefined;
-  CurrentTurn: number;
-  CurrentTurnRoundStep: RoundStepType;
+  currentPlayerTurn: Player | undefined;
+  currentRoundCounter: number;
+  currentTurnRoundStep: RoundStepType;
 
-  UpdatedTerritoryStates: TerritoryState[];
+  updatedTerritoryStates: TerritoryState[];
 
   eventDetails: HistoricalEvent[]
 }

@@ -21,6 +21,7 @@ export type ArmyApplicationSet = {
 };
 
 export interface IWorldMapState {
+  singleScreenPlay: boolean;
   gameId: string;
   currentMap: GameMap;
   currentPlayers: [Player, Player];
@@ -189,6 +190,8 @@ function moveToNextTurn(state: IWorldMapState): IWorldMapState {
     const remainingSteps = state.roundStepRemainingPlayerTurns.slice(1);
     return {
       ...state,
+      selectedTerritory: undefined,
+      detailRequestedTerritory: undefined,
       currentTurn: nextPlayer,
       roundStepRemainingPlayerTurns: remainingSteps,
     };

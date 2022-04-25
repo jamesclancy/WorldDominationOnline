@@ -53,10 +53,10 @@ async function handleEventsRequest(
     const returnValue : RecentGameEventResponse = {
       type: "RecentGameEventResponse",
       startingRoundCount: startCount,
-      CurrentPlayerTurn: currentPlayer,
-      CurrentTurn: currentTurn,
-      CurrentTurnRoundStep: currentRoundStep,
-      UpdatedTerritoryStates: updatedTerritoryStates,
+      currentPlayerTurn: currentPlayer,
+      currentRoundCounter: currentTurn,
+      currentTurnRoundStep: currentRoundStep,
+      updatedTerritoryStates: updatedTerritoryStates,
       eventDetails: historicalEvents
     };
 

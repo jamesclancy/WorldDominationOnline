@@ -4,6 +4,7 @@ import {
   CreateGameRequest,
   CreateGameResponse,
   FailureReport,
+  RecentGameEventResponse,
 } from "../models/Dtos";
 import { HistoricalEvent } from "../models/GameState";
 
@@ -13,6 +14,7 @@ const baseUrl = `${publicRuntimeConfig.apiUrl}/game`;
 export const gameService = {
   createGame,
   addGameEvent,
+  findNewGameEvents
 };
 
 async function addGameEvent(
@@ -32,6 +34,24 @@ async function addGameEvent(
   if (response.status !== 200)
     return { type: "FailureReport", failureMessage: responseData };
   return { type: "AddGameEventResponse" };
+}
+
+async function findNewGameEvents(
+  gameId: string,
+  startAt: number
+): Promise<FailureReport | RecentGameEventResponse> {
+  const response = await fetch(baseUrl + `/${gameId}/event/${startAt}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const responseData = await response.json();
+
+  if (response.status !== 200)
+    return { type: "FailureReport", failureMessage: responseData };
+  return responseData;
 }
 
 async function createGame(

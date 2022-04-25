@@ -1,5 +1,6 @@
+import { useSession } from "next-auth/react";
 import { useContext, useEffect, useState } from "react";
-import { Col, Container, Row, Toast, ToastContainer } from "react-bootstrap";
+import { Col, Container, Modal, Row, Spinner, Toast, ToastContainer } from "react-bootstrap";
 import { gameService } from "../data/client-services/GameService";
 import {
   GameContext,
@@ -8,6 +9,7 @@ import {
   WorldMapContext,
 } from "../data/models/Contexts";
 import { CountryNameKey } from "../data/models/GameMap";
+import { TerritoryState } from "../data/models/GameState";
 import {
   applyMovementToStateAndGetHistoryDto,
   IWorldMapAction,
@@ -38,10 +40,11 @@ const WorldMap = (props: IWorldMapProps) => {
     armiesToApply: [],
     roundCounter: 0,
     detailRequestedTerritory: undefined,
-    errorMessage: ""
+    errorMessage: "",
   };
 
   const [state, setState] = useState<IWorldMapState>(initialState);
+  const { data: session } = useSession();
   const [showErrorToast, setShowErrorToast] = useState(false);
 
   useEffect(() => {
@@ -60,10 +63,62 @@ const WorldMap = (props: IWorldMapProps) => {
       armiesToApply: [],
       roundCounter: gameContext.roundCounter,
       detailRequestedTerritory: undefined,
-      errorMessage: ""
+      errorMessage: "",
+      singleScreenPlay: false,
     };
     setState(loadedState);
   }, [gameContext, props.gameId]);
+
+  useEffect(() => {
+    const pollForUpdates = async () => {
+      const newEvents = await gameService.findNewGameEvents(
+        state.gameId,
+        state.roundCounter
+      );
+      const mergePositions = (
+        previousPositions: TerritoryState[],
+        updatedTerritoryStates: TerritoryState[]
+      ) =>
+        previousPositions.map(
+          (prev) =>
+            updatedTerritoryStates.find(
+              (x) => x.territoryName === prev.territoryName
+            ) ?? prev
+        );
+
+      if (
+        newEvents.type === "RecentGameEventResponse" &&
+        newEvents.currentRoundCounter > state.roundCounter
+      ) {
+        const newState: IWorldMapState = {
+          ...state,
+          currentTurn: newEvents.currentPlayerTurn?.name ?? state.currentTurn,
+          roundCounter: newEvents.currentRoundCounter,
+          roundStep: newEvents.currentTurnRoundStep,
+          currentPositions: mergePositions(
+            state.currentPositions,
+            newEvents.updatedTerritoryStates
+          ),
+        };
+
+        setState(newState);
+      }
+
+      const callPollIfNeeded = () => {
+        if (
+          !state.singleScreenPlay &&
+          state.currentTurn !== session?.user?.name
+        )
+        pollForUpdates();
+      };
+
+      await setTimeout(() => {
+        callPollIfNeeded();
+      }, 1000); // this is not a very good solution
+    };
+
+    pollForUpdates();
+  }, [state.currentTurn, state.singleScreenPlay]);
 
   async function dispatchEventAndLogToSever(action: IWorldMapAction) {
     const [newState, historyItem] = applyMovementToStateAndGetHistoryDto(
@@ -131,7 +186,13 @@ const WorldMap = (props: IWorldMapProps) => {
 
   let ErrorToast = () => (
     <ToastContainer className="p-3" position={"middle-center"}>
-      <Toast show={showErrorToast} bg="warning" onClose={() => setShowErrorToast(false)} delay={5000} autohide>
+      <Toast
+        show={showErrorToast}
+        bg="warning"
+        onClose={() => setShowErrorToast(false)}
+        delay={5000}
+        autohide
+      >
         <Toast.Header>
           <strong className="me-auto">Error Occurred Saving Event</strong>
         </Toast.Header>
@@ -145,6 +206,25 @@ const WorldMap = (props: IWorldMapProps) => {
       <Container fluid>
         <Row className="gamePanel">
           <Col>
+          {!state.singleScreenPlay && state.currentTurn !== session?.user?.name && (
+            <>
+            <Modal
+              show={true}
+              backdrop="static"
+              keyboard={false}
+              centered
+            >
+              <Modal.Body className="" >
+                <div className="d-flex justify-content-center align-self-center">
+            <Spinner animation="border" variant="warning" size="sm">
+              
+            </Spinner>&nbsp;&nbsp;
+            <strong>Waiting for {state.currentTurn}...</strong>
+            </div>
+              </Modal.Body>
+            </Modal>
+            </>
+          )}
             {state.errorMessage && <ErrorToast />}
             <div>
               <svg viewBox="0 40 210 160">
