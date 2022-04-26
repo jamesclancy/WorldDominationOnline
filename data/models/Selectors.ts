@@ -1,4 +1,8 @@
 import { ITerritoryProps } from "../../components/TerritoryTile";
+import {
+  IWorldMapAction,
+  IWorldMapState,
+} from "../services/WorldStateTransformers";
 import { IGameContext, ITileContext } from "./Contexts";
 import GameMap, {
   Continent,
@@ -10,21 +14,33 @@ import GameMap, {
 } from "./GameMap";
 import { TerritoryState } from "./GameState";
 
-function getTerritoryFromContext(gameMap: GameMap, name: string): Territory | undefined {
+function getTerritoryFromContext(
+  gameMap: GameMap,
+  name: string
+): Territory | undefined {
   return gameMap.territories.find((x) => x.name === name);
 }
 
-function getContinentFromContext(gameMap: GameMap, name: ContinentNameKey): Continent | undefined {
+function getContinentFromContext(
+  gameMap: GameMap,
+  name: ContinentNameKey
+): Continent | undefined {
   return gameMap.continents.find((x) => x.name === name);
 }
 
-export function getCountryForTerritory(gameMap: GameMap, territoryName: string): Continent | undefined {
+export function getCountryForTerritory(
+  gameMap: GameMap,
+  territoryName: string
+): Continent | undefined {
   const terr = getTerritoryFromContext(gameMap, territoryName);
   if (!terr) return undefined;
   return getContinentFromContext(gameMap, terr.continentName);
 }
 
-export function getTerritoryStateFromContext(context: IGameContext, name: CountryNameKey): TerritoryState | undefined {
+export function getTerritoryStateFromContext(
+  context: IGameContext,
+  name: CountryNameKey
+): TerritoryState | undefined {
   return context.currentPositions.find((x) => x.territoryName === name);
 }
 
@@ -32,19 +48,30 @@ export function getTerritoryPathDefinitionFromContext(
   context: IGameContext,
   name: string
 ): TerritoryPathDefinition | undefined {
-  return context.currentMap.territoryPathDefinitions.find((x) => x.name === name);
+  return context.currentMap.territoryPathDefinitions.find(
+    (x) => x.name === name
+  );
 }
 
-export function getPlayerIndexForNameFromContext(context: IGameContext, name: string): number {
+export function getPlayerIndexForNameFromContext(
+  context: IGameContext,
+  name: string
+): number {
   return context.currentPlayers.findIndex((x) => x.name === name) ?? 0;
 }
 
-export function getPlayerIndexForTerritoryFromContext(context: IGameContext, territoryName: CountryNameKey): number {
+export function getPlayerIndexForTerritoryFromContext(
+  context: IGameContext,
+  territoryName: CountryNameKey
+): number {
   let territory = getTerritoryStateFromContext(context, territoryName);
 
   if (territory === undefined) return 0;
 
-  return context.currentPlayers.findIndex((x) => x.name === territory?.playerName) ?? 0;
+  return (
+    context.currentPlayers.findIndex((x) => x.name === territory?.playerName) ??
+    0
+  );
 }
 
 export function getPotentialActionsForTerritory(
@@ -56,7 +83,10 @@ export function getPotentialActionsForTerritory(
   if (territoryState === undefined) return "None";
 
   if (context.roundStep === "AddArmies") {
-    if (context.selectedTerritory === undefined && territoryState.playerName === context.currentTurn) {
+    if (
+      context.selectedTerritory === undefined &&
+      territoryState.playerName === context.currentTurn
+    ) {
       return "AddArmies";
     } else return "None";
   }
@@ -69,8 +99,9 @@ export function getPotentialActionsForTerritory(
     return "Select";
 
   if (
-    context.currentMap.territoryBridges.find((x) => x[0] === context.selectedTerritory && x[1] === territoryName) !==
-    undefined
+    context.currentMap.territoryBridges.find(
+      (x) => x[0] === context.selectedTerritory && x[1] === territoryName
+    ) !== undefined
   ) {
     if (
       territoryState.playerName !== context.currentTurn &&
@@ -88,37 +119,51 @@ export function getPotentialActionsForTerritory(
   return "None";
 }
 
-export function buildTerritoryPropsForTile(context: ITileContext, name: CountryNameKey): ITerritoryProps | string {
+export function buildTerritoryPropsForTile(
+  context: ITileContext,
+  name: CountryNameKey
+): ITerritoryProps | string {
   let worldMapContext = context;
 
-  const territory: Territory | undefined = getTerritoryFromContext(worldMapContext.currentMap, name);
+  const territory: Territory | undefined = getTerritoryFromContext(
+    worldMapContext.currentMap,
+    name
+  );
 
   if (territory === undefined) {
     return `ERROR WHAT IS ${name}`;
   }
 
-  const continent: Continent | undefined = getContinentFromContext(worldMapContext.currentMap, territory.continentName);
+  const continent: Continent | undefined = getContinentFromContext(
+    worldMapContext.currentMap,
+    territory.continentName
+  );
 
   if (continent === undefined) {
     return `ERROR WHAT IS ${territory.continentName}`;
   }
 
-  const territoryPath: TerritoryPathDefinition | undefined = getTerritoryPathDefinitionFromContext(
-    worldMapContext,
-    name
-  );
+  const territoryPath: TerritoryPathDefinition | undefined =
+    getTerritoryPathDefinitionFromContext(worldMapContext, name);
 
   if (territoryPath === undefined) {
     return `WHERE IS ${name}`;
   }
 
-  const territoryState: TerritoryState | undefined = getTerritoryStateFromContext(worldMapContext, name);
+  const territoryState: TerritoryState | undefined =
+    getTerritoryStateFromContext(worldMapContext, name);
 
-  let ownerPlayerIndex = getPlayerIndexForTerritoryFromContext(worldMapContext, name);
+  let ownerPlayerIndex = getPlayerIndexForTerritoryFromContext(
+    worldMapContext,
+    name
+  );
   let actions = getPotentialActionsForTerritory(worldMapContext, name);
   let isSelected = name === worldMapContext.selectedTerritory;
 
-  let [, selectedTerritoryState] = getSelectedTerritory(worldMapContext) ?? [undefined, undefined];
+  let [, selectedTerritoryState] = getSelectedTerritory(worldMapContext) ?? [
+    undefined,
+    undefined,
+  ];
 
   let remainingArmiesToAdd = context.currentTurnOutstandingArmies;
   let possibleArmiesToApply =
@@ -138,19 +183,89 @@ export function buildTerritoryPropsForTile(context: ITileContext, name: CountryN
     pathDefinition: territoryPath,
     ownerIndex: ownerPlayerIndex,
     select: () => worldMapContext.onSelect(name),
-    applyArmy: (selectedArmies) => worldMapContext.applyArmies(name, selectedArmies),
+    applyArmy: (selectedArmies) =>
+      worldMapContext.applyArmies(name, selectedArmies),
     requestShowDetail: () => worldMapContext.onShowDetail(name),
     clearDetail: () => worldMapContext.onShowDetail(undefined),
-    shouldShowDetail: worldMapContext.detailRequestedTerritory != undefined && worldMapContext.detailRequestedTerritory === name
+    shouldShowDetail:
+      worldMapContext.detailRequestedTerritory != undefined &&
+      worldMapContext.detailRequestedTerritory === name,
   };
   return props;
 }
 
-function getSelectedTerritory(worldMapContext: ITileContext): [Territory | undefined, TerritoryState | undefined] {
-  if (worldMapContext.selectedTerritory === undefined) return [undefined, undefined];
+function getSelectedTerritory(
+  worldMapContext: ITileContext
+): [Territory | undefined, TerritoryState | undefined] {
+  if (worldMapContext.selectedTerritory === undefined)
+    return [undefined, undefined];
 
-  var territory = getTerritoryFromContext(worldMapContext.currentMap, worldMapContext.selectedTerritory);
-  var territoryState = getTerritoryStateFromContext(worldMapContext, worldMapContext.selectedTerritory);
+  var territory = getTerritoryFromContext(
+    worldMapContext.currentMap,
+    worldMapContext.selectedTerritory
+  );
+  var territoryState = getTerritoryStateFromContext(
+    worldMapContext,
+    worldMapContext.selectedTerritory
+  );
 
   return [territory, territoryState];
+}
+
+export function getTileContextFromGameContext(
+  gameContext: IGameContext,
+  state: IWorldMapState,
+  eventDispatcher: (action: IWorldMapAction) => Promise<void>
+): ITileContext {
+  return {
+    ...gameContext,
+    currentPositions: state.currentPositions,
+    currentTurn: state.currentTurn,
+    selectedTerritory: state.selectedTerritory,
+    detailRequestedTerritory: state.detailRequestedTerritory,
+    roundStep: state.roundStep,
+    currentTurnOutstandingArmies:
+      state.armiesToApply.find((x) => x.playerName === state.currentTurn)
+        ?.numberOfArmiesRemaining ?? 0,
+    onSelect: async (name: CountryNameKey) => {
+      await eventDispatcher({ type: "SelectTile", target: name });
+    },
+    applyArmies: async (name: CountryNameKey, selectedArmies: number) => {
+      await eventDispatcher({
+        type: "TargetTile",
+        armiesToApply: selectedArmies,
+        target: name,
+      });
+    },
+    onShowDetail: async (name: CountryNameKey | undefined) => {
+      await eventDispatcher({
+        type: "ShowDetail",
+        target: name,
+      });
+    },
+  };
+}
+
+export function getWorldMapStateFromContext(
+  gameId: string,
+  gameContext: IGameContext
+): IWorldMapState {
+  return {
+    gameId: gameId,
+    currentMap: gameContext.currentMap,
+    currentPlayers: gameContext.currentPlayers,
+    currentTurn: gameContext.currentPlayers[0].name,
+    currentPositions: gameContext.currentPositions,
+    selectedTerritory: undefined,
+    history: "Game Started",
+    roundStep: "Attack",
+    roundStepRemainingPlayerTurns: gameContext.currentPlayers
+      .map((x) => x.name)
+      .slice(1),
+    armiesToApply: [],
+    roundCounter: gameContext.roundCounter,
+    detailRequestedTerritory: undefined,
+    errorMessage: "",
+    singleScreenPlay: false,
+  };
 }

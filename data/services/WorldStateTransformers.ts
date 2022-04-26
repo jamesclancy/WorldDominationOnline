@@ -1,3 +1,4 @@
+import { FailureReport, RecentGameEventResponse } from "../models/Dtos";
 import GameMap, { CountryNameKey } from "../models/GameMap";
 import {
   HistoricalEvent,
@@ -440,3 +441,39 @@ function performAddArmies(
     detailItem,
   ]);
 }
+
+const mergePositions = (
+  previousPositions: TerritoryState[],
+  updatedTerritoryStates: TerritoryState[]
+) =>
+  previousPositions.map(
+    (prev) =>
+      updatedTerritoryStates.find(
+        (x) => x.territoryName === prev.territoryName
+      ) ?? prev
+  );
+
+export const applyNewEventsToState = (
+  state: IWorldMapState,
+  newEvents: RecentGameEventResponse | FailureReport
+) => {
+  if (
+    newEvents.type === "RecentGameEventResponse" &&
+    newEvents.currentRoundCounter > state.roundCounter
+  ) {
+    const newState: IWorldMapState = {
+      ...state,
+      currentTurn: newEvents.currentPlayerTurn?.name ?? state.currentTurn,
+      roundCounter: newEvents.currentRoundCounter,
+      roundStep: newEvents.currentTurnRoundStep,
+      currentPositions: mergePositions(
+        state.currentPositions,
+        newEvents.updatedTerritoryStates
+      ),
+    };
+
+    return newState;
+  }
+
+  return state;
+};

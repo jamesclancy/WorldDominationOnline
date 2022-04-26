@@ -1,11 +1,12 @@
 import { useContext } from "react";
 import {
-  Button,
+  Form,
   Row,
   Nav,
   Navbar,
   NavDropdown,
   Container,
+  NavItem,
 } from "react-bootstrap";
 import { ITileContext, WorldMapContext } from "../data/models/Contexts";
 import {
@@ -19,6 +20,8 @@ interface IWorldMapControlPanelProps {
   selectedTerritory: string | undefined;
   roundStep: RoundStepType;
   history: string;
+  singleScreenPlay: boolean;
+  toggleSingleScreenPlay: ()=> void;
   clearSelectedTerritory: () => void;
   moveNextStep: () => void;
 }
@@ -54,9 +57,16 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
     })
     .filter((x) => x.action !== "None")
     .map((x) => {
-      let click = () =>  x.action === "Select" ? worldMapContext.onSelect(x.name) : worldMapContext.onShowDetail(x.name) ;
+      let click = () =>
+        x.action === "Select"
+          ? worldMapContext.onSelect(x.name)
+          : worldMapContext.onShowDetail(x.name);
       let text = `${x.name}-${x.action}`;
-      return <NavDropdown.Item onClick={click} key={text}>{text}</NavDropdown.Item>;
+      return (
+        <NavDropdown.Item onClick={click} key={text}>
+          {text}
+        </NavDropdown.Item>
+      );
     });
 
   if (worldMapContext.selectedTerritory !== undefined)
@@ -98,9 +108,29 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
             </Nav>
             <Nav>
               <NavDropdown
+                title="Configuration & Settings"
+                drop={"up"}
+                style={{ backgroundColor: "#fff" }}
+              >
+                <form
+                  className="form-inline p-2"
+                  style={{ backgroundColor: "#fff" }}
+                >
+                  <div className="input-group">
+                    <Form.Check type="switch" 
+                    label="Single Screen Play" 
+                    value={props.singleScreenPlay}
+                    onChange={props.toggleSingleScreenPlay}
+                    />
+                  </div>
+                </form>
+              </NavDropdown>
+
+              <NavDropdown
                 title="Potential Moves"
                 drop={"up"}
-                style={{ backgroundColor: "#fff" }}>
+                style={{ backgroundColor: "#fff" }}
+              >
                 {movements}
               </NavDropdown>
               <Nav.Link
