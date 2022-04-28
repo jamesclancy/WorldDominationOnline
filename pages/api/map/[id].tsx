@@ -1,4 +1,4 @@
-import {  MapRecord } from "@prisma/client";
+import { MapRecord } from "@prisma/client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 

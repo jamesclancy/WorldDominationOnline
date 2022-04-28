@@ -183,32 +183,40 @@ const createGame = async (createRequest: {
 };
 
 const getGameSummariesForUser: (
-  userName: string
-) => Promise<GameSummary[] | null> = async (userName: string) => {
-  const availableMaps = await prisma.gameRecord.findMany({
-    where: {
-      AND: [
-        {
-          OR: [
-            {
-              player1: {
-                name: userName,
-              },
+  userName: string,
+  includeCompletedGames: boolean
+) => Promise<GameSummary[] | null> = async (
+  userName: string,
+  includeCompletedGames: boolean
+) => {
+  const whereQueryBuilder = (includeCompletedGames: boolean) => ({
+    AND: [
+      {
+        OR: [
+          {
+            player1: {
+              name: userName,
             },
-            {
-              player2: {
-                name: userName,
-              },
-            },
-          ],
-        },
-        {
-          NOT: {
-            currentTurnStep: "GameOver",
           },
-        },
-      ],
-    },
+          {
+            player2: {
+              name: userName,
+            },
+          },
+        ],
+      },
+      includeCompletedGames
+        ? {}
+        : {
+            NOT: {
+              currentTurnStep: "GameOver",
+            },
+          },
+    ],
+  });
+
+  const availableMaps = await prisma.gameRecord.findMany({
+    where: whereQueryBuilder(includeCompletedGames),
     select: gameSummarySelectQueryDefinition,
   });
 
@@ -311,6 +319,11 @@ async function getGameEvents(
               name: true,
             },
           },
+          postEventWinningPlayer: {
+            select: {
+              name: true,
+            },
+          },
           newRoundStep: true,
           roundCounter: true,
           humanReadableDescription: true,
@@ -364,6 +377,7 @@ async function getGameEvents(
         details: details,
         humanReadableDescription: ev.humanReadableDescription,
         roundStep: ev.roundStep,
+        winner: ev.postEventWinningPlayer?.name,
       };
 
       return historicalEvent;

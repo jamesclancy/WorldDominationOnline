@@ -1,5 +1,10 @@
 import { IGameContext, ITileContext } from "../models/Contexts";
-import GameMap, { Continent, Territory, TerritoryBridge, TerritoryPathDefinition } from "../models/GameMap";
+import GameMap, {
+  Continent,
+  Territory,
+  TerritoryBridge,
+  TerritoryPathDefinition,
+} from "../models/GameMap";
 import { GameState } from "../models/GameState";
 import Player from "../models/Player";
 import { api } from "./Remote";
@@ -12,7 +17,7 @@ export async function constructEmptyWorldMapContext(): Promise<ITileContext> {
     ...gameContext,
     onSelect: (x) => {},
     applyArmies: (x, y) => {},
-    onShowDetail: (x) => {}
+    onShowDetail: (x) => {},
   };
   return context;
 }
@@ -27,21 +32,29 @@ export async function constructInitialGameContext(): Promise<IGameContext> {
     currentTurn: newGame.currentPlayers[0].name,
     selectedTerritory: undefined,
     currentTurnOutstandingArmies: 0,
-    detailRequestedTerritory: undefined
+    detailRequestedTerritory: undefined,
+    roundCounter: 0,
+    winner: undefined,
   };
 
   return context;
 }
 
-async function constructNewGame(args: IConstructNewGameDependencies): Promise<GameState> {
-  const continents: Continent[] = await api.get<Continent[]>("/game-data/standard/continents.json");
-  const territories: Territory[] = await api.get<Territory[]>("/game-data/standard/territories.json");
+async function constructNewGame(
+  args: IConstructNewGameDependencies
+): Promise<GameState> {
+  const continents: Continent[] = await api.get<Continent[]>(
+    "/game-data/standard/continents.json"
+  );
+  const territories: Territory[] = await api.get<Territory[]>(
+    "/game-data/standard/territories.json"
+  );
   const territoryBridges: TerritoryBridge[] = await api.get<TerritoryBridge[]>(
     "/game-data/standard/territory-bridges.json"
   );
-  const territoryPathDefinitions: TerritoryPathDefinition[] = await api.get<TerritoryPathDefinition[]>(
-    "/game-data/standard/territory-path-definitions.json"
-  );
+  const territoryPathDefinitions: TerritoryPathDefinition[] = await api.get<
+    TerritoryPathDefinition[]
+  >("/game-data/standard/territory-path-definitions.json");
 
   const map: GameMap = {
     continents,

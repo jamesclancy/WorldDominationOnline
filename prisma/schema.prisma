@@ -104,6 +104,9 @@ model GameEventRecord {
   playerForEvent   User   @relation("player_driver_events", fields: [playerForEventId], references: [id])
 
 
+  postEventWinningPlayerId String?
+  postEventWinningPlayer   User?   @relation("player_events_causing_win", fields: [postEventWinningPlayerId], references: [id])
+
   postEventPlayerId String
   postEventPlayer   User   @relation("player_preturn_events", fields: [postEventPlayerId], references: [id])
 
@@ -192,8 +195,9 @@ model User {
 
   territoryStates GameTerritoryStateRecord[] @relation("territory_owner")
 
-  drivenGameEvents  GameEventRecord[] @relation("player_driver_events")
-  preTurnGameEvents GameEventRecord[] @relation("player_preturn_events")
+  drivenGameEvents     GameEventRecord[] @relation("player_driver_events")
+  preTurnGameEvents    GameEventRecord[] @relation("player_preturn_events")
+  eventsTriggeringWins GameEventRecord[] @relation("player_events_causing_win")
 
   postEventOwnershipEventDetail GameEventDetailRecord[] @relation("player_ownership_post_event_detail")
 }

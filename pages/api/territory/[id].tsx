@@ -1,14 +1,14 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
-  name: string
-}
+  name: string;
+};
 
 export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
-) {  
-  const { id } = req.query
-  res.end(`Post: ${id}`)
+) {
+  const { id } = req.query;
+  res.end(`Post: ${id}`);
   //res.status(200).json({ name: req. })
 }

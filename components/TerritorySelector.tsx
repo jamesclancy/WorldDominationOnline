@@ -135,7 +135,7 @@ const TerritorySelect = (props: ITerritorySelectProps) => {
   };
 
   const onChangePlayerName = (rowIndex: number, columnIndex: number) => {
-   return (e: React.ChangeEvent<HTMLInputElement>) => {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
       changePlayer(e?.currentTarget?.value ?? "", rowIndex, columnIndex);
     };
   };

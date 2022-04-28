@@ -1,5 +1,10 @@
 import internal from "stream";
-import { GameSummary, HistoricalEvent, RoundStepType, TerritoryState } from "./GameState";
+import {
+  GameSummary,
+  HistoricalEvent,
+  RoundStepType,
+  TerritoryState,
+} from "./GameState";
 import Player from "./Player";
 
 export interface CreateGameRequest {
@@ -9,22 +14,21 @@ export interface CreateGameRequest {
 }
 
 export interface CreateGameResponse {
-  type: 'CreateGameResponse';
+  type: "CreateGameResponse";
   gameId: string;
 }
 
 export interface FailureReport {
-  type: 'FailureReport';
+  type: "FailureReport";
   failureMessage: string;
 }
 
 export interface AddGameEventResponse {
-  type: 'AddGameEventResponse';
+  type: "AddGameEventResponse";
 }
 
-
 export interface RecentGameEventResponse {
-  type: 'RecentGameEventResponse';
+  type: "RecentGameEventResponse";
   startingRoundCount: number;
 
   currentPlayerTurn: Player | undefined;
@@ -33,10 +37,10 @@ export interface RecentGameEventResponse {
 
   updatedTerritoryStates: TerritoryState[];
 
-  eventDetails: HistoricalEvent[]
+  eventDetails: HistoricalEvent[];
 }
 
 export interface GameSummariesForUserResponse {
-  type: 'GameSummariesForUserResponse';
-  gameSummaries:GameSummary[];
+  type: "GameSummariesForUserResponse";
+  gameSummaries: GameSummary[];
 }

@@ -1,15 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
+
   publicRuntimeConfig: {
     // Will be available on both server and client
-    apiUrl: 'http://localhost:3000/api',
+    apiUrl: "http://localhost:3000/api",
   },
   sassOptions: {
-    includePaths: ['./styles'],
+    includePaths: ["./styles"],
   },
-}
+};
 
-module.exports = nextConfig
-4
+module.exports = nextConfig;
+4;

@@ -36,6 +36,7 @@ export interface IWorldMapState {
   armiesToApply: ArmyApplicationSet[];
   roundCounter: number;
   errorMessage: string;
+  winner: string | undefined;
 }
 
 export interface IWorldMapAction {
@@ -64,6 +65,7 @@ function buildStateHistoryTupleFromStates(
     newPlayerTurn: newState.currentTurn,
     mewPlayerRoundStep: newState.roundStep,
     newSelectedTerritory: newState.selectedTerritory,
+    winner: newState.winner,
     details: details,
     humanReadableDescription: humanReadableDescription,
     roundStep: previousState.roundStep,
@@ -344,8 +346,21 @@ function performAttackOrMove(
     update,
     state.history
   );
+
+  const remainingPlayers = Array.from(
+    new Set(updatedPositions.map((x) => x.playerName))
+  );
+
   const baseState =
-    state.roundStep === "Movement" ? moveToNextTurn(state) : state;
+    remainingPlayers.length === 1
+      ? {
+          ...state,
+          roundStep: "GameOver",
+          winner: remainingPlayers[0]!,
+        }
+      : state.roundStep === "Movement"
+      ? moveToNextTurn(state)
+      : state;
   const newState = {
     ...baseState,
     currentPositions: updatedPositions,
@@ -461,11 +476,15 @@ export const applyNewEventsToState = (
     newEvents.type === "RecentGameEventResponse" &&
     newEvents.currentRoundCounter > state.roundCounter
   ) {
+    const winner = newEvents.eventDetails
+      .filter((x) => x.winner)
+      .map((x) => x.winner);
     const newState: IWorldMapState = {
       ...state,
       currentTurn: newEvents.currentPlayerTurn?.name ?? state.currentTurn,
       roundCounter: newEvents.currentRoundCounter,
       roundStep: newEvents.currentTurnRoundStep,
+      winner: winner.length > 0 ? winner[0] : undefined,
       currentPositions: mergePositions(
         state.currentPositions,
         newEvents.updatedTerritoryStates

@@ -6,7 +6,6 @@ import {
   Navbar,
   NavDropdown,
   Container,
-  NavItem,
 } from "react-bootstrap";
 import { ITileContext, WorldMapContext } from "../data/models/Contexts";
 import {
@@ -21,7 +20,7 @@ interface IWorldMapControlPanelProps {
   roundStep: RoundStepType;
   history: string;
   singleScreenPlay: boolean;
-  toggleSingleScreenPlay: ()=> void;
+  toggleSingleScreenPlay: () => void;
   clearSelectedTerritory: () => void;
   moveNextStep: () => void;
 }
@@ -33,19 +32,6 @@ interface IPotentialActionSet {
 
 export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
   let worldMapContext = useContext<ITileContext>(WorldMapContext);
-
-  let icon = (x: TerritoryPotentialActions) => {
-    switch (x) {
-      case "Select":
-        return { iconName: "select" };
-      case "Attack":
-        return { iconName: "target" };
-      case "Move":
-        return { iconName: "move" };
-      case "AddArmies":
-        return { iconName: "add" };
-    }
-  };
 
   let possibleActions = worldMapContext.currentMap.territories
     .map((x) => {
@@ -88,12 +74,11 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
           <Navbar.Toggle />
           <Navbar.Collapse>
             <Nav
-              className="me-auto my-2 my-lg-0"
+              className="me-auto my-2 my-lg-0 world-map-control-panel-nav"
               navbarScroll
-              style={{ backgroundColor: "#fff" }}
             >
               {" "}
-              <Navbar.Brand style={{ backgroundColor: "#fff" }}>
+              <Navbar.Brand className="world-map-control-panel-nav">
                 {worldMapContext.currentTurn}&apos;s Turn
               </Navbar.Brand>
               <Nav.Link active={worldMapContext.roundStep === "AddArmies"}>
@@ -110,17 +95,15 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
               <NavDropdown
                 title="Configuration & Settings"
                 drop={"up"}
-                style={{ backgroundColor: "#fff" }}
+                className="world-map-control-panel-nav"
               >
-                <form
-                  className="form-inline p-2"
-                  style={{ backgroundColor: "#fff" }}
-                >
+                <form className="form-inline p-2 world-map-control-panel-nav">
                   <div className="input-group">
-                    <Form.Check type="switch" 
-                    label="Single Screen Play" 
-                    value={props.singleScreenPlay}
-                    onChange={props.toggleSingleScreenPlay}
+                    <Form.Check
+                      type="switch"
+                      label="Single Screen Play"
+                      value={`${props.singleScreenPlay}`}
+                      onChange={props.toggleSingleScreenPlay}
                     />
                   </div>
                 </form>
@@ -129,13 +112,13 @@ export const WorldMapControlPanel = (props: IWorldMapControlPanelProps) => {
               <NavDropdown
                 title="Potential Moves"
                 drop={"up"}
-                style={{ backgroundColor: "#fff" }}
+                className="world-map-control-panel-nav"
               >
                 {movements}
               </NavDropdown>
               <Nav.Link
                 onClick={props.moveNextStep}
-                style={{ backgroundColor: "#fff" }}
+                className="world-map-control-panel-nav"
               >
                 Move to Next Step
               </Nav.Link>

@@ -17,10 +17,11 @@ const emptyContext: IGameContext = {
   currentPositions: [],
   currentTurn: "Player 1",
   roundStep: "Attack",
-  roundCounter:0,
+  roundCounter: 0,
   selectedTerritory: undefined,
   currentTurnOutstandingArmies: 0,
-  detailRequestedTerritory: undefined
+  detailRequestedTerritory: undefined,
+  winner: undefined,
 };
 
 const emptyMapContext: ITileContext = {
@@ -34,7 +35,7 @@ const emptyMapContext: ITileContext = {
     { name: "Player 1", displayName: "Player 1" },
     { name: "Player 2", displayName: "Player 2" },
   ],
-  roundCounter:0,
+  roundCounter: 0,
   currentPositions: [],
   currentTurn: "Player 1",
   roundStep: "Movement",
@@ -43,13 +44,16 @@ const emptyMapContext: ITileContext = {
   onSelect: (x) => {},
   currentTurnOutstandingArmies: 0,
   onShowDetail: (x) => {},
-  detailRequestedTerritory: undefined
+  detailRequestedTerritory: undefined,
+  winner: undefined,
 };
 
 export const GameContext = React.createContext<IGameContext>(emptyContext);
-export const WorldMapContext = React.createContext<ITileContext>(emptyMapContext);
+export const WorldMapContext =
+  React.createContext<ITileContext>(emptyMapContext);
 
 export interface IGameContext {
+  winner: string | undefined;
   roundCounter: number;
   currentMap: GameMap;
   roundStep: RoundStepType;
@@ -58,11 +62,11 @@ export interface IGameContext {
   currentTurn: string;
   currentTurnOutstandingArmies: number;
   selectedTerritory: CountryNameKey | undefined;
-  detailRequestedTerritory: CountryNameKey| undefined;
+  detailRequestedTerritory: CountryNameKey | undefined;
 }
 
 export interface ITileContext extends IGameContext {
   applyArmies(territoryName: CountryNameKey, selectedArmies: number): void;
   onSelect(territoryName: CountryNameKey): void;
-  onShowDetail(territoryName: CountryNameKey | undefined) :void;
+  onShowDetail(territoryName: CountryNameKey | undefined): void;
 }

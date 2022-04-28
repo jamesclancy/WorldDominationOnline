@@ -50,17 +50,21 @@ export interface GameDetail {
   currentTurn: Player;
 }
 
+const possibleRoundStepTypes = [
+  "AddArmies",
+  "Attack",
+  "Movement",
+  "InvalidValue",
+  "GameOver",
+];
 
-const possibleRoundStepTypes = ["AddArmies", "Attack", "Movement", "InvalidValue", "GameOver"];
-
-export function toRoundStepType(valueToTry: string) : RoundStepType {
+export function toRoundStepType(valueToTry: string): RoundStepType {
   const contIndex = possibleRoundStepTypes.findIndex((x) => x === valueToTry);
   if (contIndex === -1) return "InvalidValue";
   return possibleRoundStepTypes[contIndex];
 }
 
 export type RoundStepType = typeof possibleRoundStepTypes[number];
-
 
 export interface HistoricalEvent {
   playerTurn: string;
@@ -71,6 +75,7 @@ export interface HistoricalEvent {
   details: HistoricalEventDetailItem[];
   humanReadableDescription: string;
   roundStep: RoundStepType;
+  winner: string | undefined;
 }
 
 export interface HistoricalEventDetailItem {

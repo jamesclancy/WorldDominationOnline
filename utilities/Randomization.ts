@@ -5,14 +5,19 @@ export function shuffle(array: any[]): any[] {
     .map(({ value }) => value);
 }
 
-export function rollBattleDice(attackers: number, defenders: number): [number, number] {
+export function rollBattleDice(
+  attackers: number,
+  defenders: number
+): [number, number] {
   const attackerAdvantage = attackers - defenders;
 
   let attackersLost = 0;
   let defendersLost = 0;
 
   const attackRolls = rollMultipleDice(Math.min(attackers, 3)).sort().reverse();
-  const defenseRolls = rollMultipleDice(Math.min(defenders, 2)).sort().reverse();
+  const defenseRolls = rollMultipleDice(Math.min(defenders, 2))
+    .sort()
+    .reverse();
 
   for (let roll in defenseRolls) {
     if (attackRolls[roll] > defenseRolls[roll]) defendersLost++;

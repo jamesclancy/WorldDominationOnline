@@ -89,14 +89,14 @@ export function mapQueryResultToGameSummary(availableMaps: {
   currentTurnStep: string;
   currentTurn: number;
   winner: { name: string; displayName: string | null } | null;
-  currentTurnPlayer: { name: string; displayName: string | null  } | null;
-  player1: { name: string; displayName: string | null  };
-  player2: { name: string; displayName: string | null  };
+  currentTurnPlayer: { name: string; displayName: string | null } | null;
+  player1: { name: string; displayName: string | null };
+  player2: { name: string; displayName: string | null };
   map: { id: string; name: string };
   createdAt: Date;
   updatedAt: Date;
 }): GameSummary {
-  return {
+  let baseSummary: GameSummary = {
     id: availableMaps.id,
     currentTurnCount: availableMaps.currentTurn,
     currentTurnStep: toRoundStepType(availableMaps.currentTurnStep),
@@ -106,13 +106,31 @@ export function mapQueryResultToGameSummary(availableMaps: {
     },
     player1: {
       name: availableMaps.player1.name,
-      displayName: availableMaps.player1.displayName ?? availableMaps.player1.name,
+      displayName:
+        availableMaps.player1.displayName ?? availableMaps.player1.name,
     },
     player2: {
       name: availableMaps.player2.name,
-      displayName: availableMaps.player2.displayName ?? availableMaps.player2.name,
+      displayName:
+        availableMaps.player2.displayName ?? availableMaps.player2.name,
     },
     startDate: availableMaps.createdAt.toUTCString(),
     updatedDate: availableMaps.updatedAt.toUTCString(),
   };
+
+  if (availableMaps.winner)
+    baseSummary.winningPlayer = {
+      name: availableMaps.winner?.name,
+      displayName:
+        availableMaps.winner?.displayName ?? availableMaps.winner?.name,
+    };
+  if (availableMaps.currentTurnPlayer)
+    baseSummary.currentTurnPlayer = {
+      name: availableMaps.currentTurnPlayer?.name,
+      displayName:
+        availableMaps.currentTurnPlayer?.displayName ??
+        availableMaps.currentTurnPlayer?.name,
+    };
+
+  return baseSummary;
 }

@@ -267,5 +267,6 @@ export function getWorldMapStateFromContext(
     detailRequestedTerritory: undefined,
     errorMessage: "",
     singleScreenPlay: false,
+    winner: gameContext.winner,
   };
 }

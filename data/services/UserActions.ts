@@ -10,15 +10,23 @@ export function executeArmyMovementAgainstTerritoryStates(
 ): [string, TerritoryState[]] {
   let positions = currentPositions;
 
-  let selectedTerritoryState = positions.find((x) => x.territoryName === selectedTerritory);
-  let targetTerritoryState = positions.find((x) => x.territoryName === targetTerritory);
+  let selectedTerritoryState = positions.find(
+    (x) => x.territoryName === selectedTerritory
+  );
+  let targetTerritoryState = positions.find(
+    (x) => x.territoryName === targetTerritory
+  );
 
   let updatedSelectedTerritoryState;
   let updatedTargetTerritoryState;
 
   let whatHappened = "";
 
-  if (selectedTerritoryState === undefined || targetTerritoryState === undefined) return [whatHappened, positions];
+  if (
+    selectedTerritoryState === undefined ||
+    targetTerritoryState === undefined
+  )
+    return [whatHappened, positions];
 
   if (selectedTerritoryState.playerName === targetTerritoryState.playerName) {
     // If the tile has the same owner just move the armies.
@@ -34,9 +42,16 @@ export function executeArmyMovementAgainstTerritoryStates(
     whatHappened = `${updatedSelectedTerritoryState.playerName} is moving ${selectedArmies} armies from ${selectedTerritory} to ${targetTerritory}.`;
   } else {
     // If the tiles have different owners it is an attack.
-    let [survivingAttackers, survivingDefenders] = rollBattleDice(selectedArmies, targetTerritoryState.armies);
+    let [survivingAttackers, survivingDefenders] = rollBattleDice(
+      selectedArmies,
+      targetTerritoryState.armies
+    );
 
-    ({ updatedSelectedTerritoryState, updatedTargetTerritoryState, whatHappened } = applyAttackResults(
+    ({
+      updatedSelectedTerritoryState,
+      updatedTargetTerritoryState,
+      whatHappened,
+    } = applyAttackResults(
       survivingDefenders,
       updatedSelectedTerritoryState,
       selectedTerritoryState,
@@ -51,7 +66,9 @@ export function executeArmyMovementAgainstTerritoryStates(
   }
 
   let updatedPositions = positions.filter(
-    (x) => x.territoryName !== targetTerritory && x.territoryName !== selectedTerritory
+    (x) =>
+      x.territoryName !== targetTerritory &&
+      x.territoryName !== selectedTerritory
   );
   updatedPositions.push(updatedSelectedTerritoryState);
   updatedPositions.push(updatedTargetTerritoryState);
@@ -102,7 +119,11 @@ function applyAttackResults(
                                : targetTerritoryState.playerName
                            } won.
                            - survivingAttackers: ${survivingAttackers}, survivingDefenders: ${survivingDefenders}`;
-  return { updatedSelectedTerritoryState, updatedTargetTerritoryState, whatHappened };
+  return {
+    updatedSelectedTerritoryState,
+    updatedTargetTerritoryState,
+    whatHappened,
+  };
 }
 
 export function addArmiesToTile(
@@ -112,7 +133,9 @@ export function addArmiesToTile(
 ): [string, TerritoryState[]] {
   let positions = currentPositions;
 
-  let targetTerritoryState = positions.find((x) => x.territoryName === targetTerritory);
+  let targetTerritoryState = positions.find(
+    (x) => x.territoryName === targetTerritory
+  );
 
   let updatedTargetTerritoryState;
 
@@ -127,7 +150,9 @@ export function addArmiesToTile(
 
   whatHappened = `${targetTerritoryState.playerName} is adding ${selectedArmies} armies to ${targetTerritory}.`;
 
-  let updatedPositions = positions.filter((x) => x.territoryName !== targetTerritory);
+  let updatedPositions = positions.filter(
+    (x) => x.territoryName !== targetTerritory
+  );
   updatedPositions.push(updatedTargetTerritoryState);
 
   return [whatHappened, updatedPositions];

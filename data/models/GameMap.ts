@@ -64,7 +64,7 @@ const countryNames = [
   "NewGuinea",
   "WesternAustralia",
   "EasternAustralia",
-  "InvalidValue"
+  "InvalidValue",
 ];
 
 export const toCountryNameKey: (valueToTry: string) => CountryNameKey = (

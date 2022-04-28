@@ -50,14 +50,14 @@ async function handleEventsRequest(
       historicalEvents,
     ] = await PersistanceService.getGameEvents(id, startCount);
 
-    const returnValue : RecentGameEventResponse = {
+    const returnValue: RecentGameEventResponse = {
       type: "RecentGameEventResponse",
       startingRoundCount: startCount,
       currentPlayerTurn: currentPlayer,
       currentRoundCounter: currentTurn,
       currentTurnRoundStep: currentRoundStep,
       updatedTerritoryStates: updatedTerritoryStates,
-      eventDetails: historicalEvents
+      eventDetails: historicalEvents,
     };
 
     res.json(returnValue);

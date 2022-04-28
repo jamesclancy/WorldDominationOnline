@@ -27,6 +27,7 @@ const GameBoard: NextPage<IGameBoardProps> = (props: IGameBoardProps) => {
           currentPlayers: [props.gameMap.player1, props.gameMap.player2],
           detailRequestedTerritory: undefined,
           roundCounter: props.gameMap.currentTurnCount,
+          winner: props.gameMap.winningPlayer?.name ?? undefined,
         }}
       >
         <WorldMap gameId={props.gameId} />

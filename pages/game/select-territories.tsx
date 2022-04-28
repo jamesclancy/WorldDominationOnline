@@ -34,9 +34,7 @@ const SelectTerritories: NextPage<ISelectTerritoriesProps> = (
   };
 
   return (
-    <GeneralPageLayout
-      title="Set-Up Game"
-    >
+    <GeneralPageLayout title="Set-Up Game">
       <TerritorySelect
         Territories={props.gameMap.territories}
         onStartGame={startGame}

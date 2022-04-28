@@ -23,7 +23,7 @@ export default async function handler(
 
     const gameId = await PersistanceService.createGame(createRequest);
 
-    res.json({gameId});
+    res.json({ gameId });
     res.status(200);
   }
 }

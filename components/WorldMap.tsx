@@ -19,6 +19,7 @@ import {
   IWorldMapState,
 } from "../data/services/WorldStateTransformers";
 import ErrorToast from "./ErrorToast";
+import GameWonModal from "./GameWonModal";
 import LoadingModal from "./LoadingModal";
 import { NamedTerritoryTile } from "./TerritoryTile";
 
@@ -60,7 +61,10 @@ const WorldMap = (props: IWorldMapProps) => {
         !newState.singleScreenPlay &&
         newState.currentTurn !== session?.user?.name
       )
-        setTimeout(() => recursivePollForUpdates(), 750);
+        setTimeout(
+          () => recursivePollForUpdates(),
+          Number(process.env.NEXT_PUBLIC_POLLING_MS_FOR_GAME_UPDATES)
+        );
     });
     promise.catch((e) => {
       setState({ ...state, errorMessage: e });
@@ -73,13 +77,9 @@ const WorldMap = (props: IWorldMapProps) => {
       !state.singleScreenPlay &&
       state.currentTurn !== currentUserName
     ) {
-      recursivePollForUpdates();
+      recursivePollForUpdates(); // I am thinking this is actually safe in JS but this should be pulled out into a custom hook
     }
-  }, [
-    state.currentTurn,
-    state.singleScreenPlay,
-    currentUserName
-  ]);
+  }, [state.currentTurn, state.singleScreenPlay, currentUserName]);
 
   async function dispatchEventAndLogToSever(action: IWorldMapAction) {
     const [newState, historyItem] = applyMovementToStateAndGetHistoryDto(
@@ -134,11 +134,10 @@ const WorldMap = (props: IWorldMapProps) => {
                 />
               )}
             {state.errorMessage && (
-              <ErrorToast
-                show={showErrorToast}
-                errorMessage={state.errorMessage}
-                closeToast={() => setShowErrorToast(false)}
-              />
+              <ErrorToast errorMessage={state.errorMessage} />
+            )}
+            {state.roundStep === "GameOver" && state.winner && (
+              <GameWonModal winner={state.winner} />
             )}
             <div>
               <svg viewBox="0 40 210 160">

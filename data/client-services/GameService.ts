@@ -14,7 +14,7 @@ const baseUrl = `${publicRuntimeConfig.apiUrl}/game`;
 export const gameService = {
   createGame,
   addGameEvent,
-  findNewGameEvents
+  findNewGameEvents,
 };
 
 async function addGameEvent(

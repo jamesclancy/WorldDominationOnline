@@ -4,24 +4,31 @@ import PersistanceService from "../../../data/services/PersistanceService";
 
 type Data = GameSummary[] | null;
 
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
   const [id, subPage] = parseSlug(req.query.slugs);
 
-  switch(subPage) {
+  switch (subPage) {
     case "games":
-      await gameResultsForUser(id, res);
+      await gameResultsForUser(id, res, req.query);
       break;
     default:
       res.status(404);
   }
 }
 
-async function gameResultsForUser(id: string, res: NextApiResponse<Data> ) {
-  var games = await PersistanceService.getGameSummariesForUser(id);
+async function gameResultsForUser(
+  id: string,
+  res: NextApiResponse<Data>,
+  additionalQueryParams: { [key: string]: string | string[] }
+) {
+  const includeCompleted = additionalQueryParams["includeCompleted"] === "true";
+  var games = await PersistanceService.getGameSummariesForUser(
+    id,
+    includeCompleted
+  );
   res.json(games);
 }
 
