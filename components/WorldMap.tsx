@@ -1,23 +1,13 @@
-import { useSession } from "next-auth/react";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { Col, Container, Row } from "react-bootstrap";
-import { gameService } from "../data/client-services/GameService";
 import {
   GameContext,
   IGameContext,
   ITileContext,
   WorldMapContext,
 } from "../data/models/Contexts";
-import {
-  getTileContextFromGameContext,
-  getWorldMapStateFromContext,
-} from "../data/models/Selectors";
-import {
-  applyMovementToStateAndGetHistoryDto,
-  applyNewEventsToState,
-  IWorldMapAction,
-  IWorldMapState,
-} from "../data/services/WorldStateTransformers";
+import { getTileContextFromGameContext } from "../data/models/Selectors";
+import { useWorldMapStateManagement } from "../hooks/useWorldMapStateManagement";
 import ErrorToast from "./ErrorToast";
 import GameWonModal from "./GameWonModal";
 import LoadingModal from "./LoadingModal";
@@ -32,76 +22,8 @@ interface IWorldMapProps {
 const WorldMap = (props: IWorldMapProps) => {
   let gameContext = useContext<IGameContext>(GameContext);
 
-  const initialState = getWorldMapStateFromContext(props.gameId, gameContext);
-
-  const [state, setState] = useState<IWorldMapState>(initialState);
-  const { data: session } = useSession();
-  const [showErrorToast, setShowErrorToast] = useState(false);
-
-  const currentUserName = session?.user?.name;
-
-  useEffect(() => {
-    const loadedState: IWorldMapState = getWorldMapStateFromContext(
-      props.gameId,
-      gameContext
-    );
-    setState(loadedState);
-  }, [gameContext, props.gameId]);
-
-  const recursivePollForUpdates = () => {
-    const promise = gameService.findNewGameEvents(
-      state.gameId,
-      state.roundCounter
-    );
-    promise.then((newEvents) => {
-      const newState = applyNewEventsToState(state, newEvents);
-      setState(newState);
-
-      if (
-        !newState.singleScreenPlay &&
-        newState.currentTurn !== session?.user?.name
-      )
-        setTimeout(
-          () => recursivePollForUpdates(),
-          Number(process.env.NEXT_PUBLIC_POLLING_MS_FOR_GAME_UPDATES)
-        );
-    });
-    promise.catch((e) => {
-      setState({ ...state, errorMessage: e });
-    });
-  };
-
-  useEffect(() => {
-    if (
-      currentUserName &&
-      !state.singleScreenPlay &&
-      state.currentTurn !== currentUserName
-    ) {
-      recursivePollForUpdates(); // I am thinking this is actually safe in JS but this should be pulled out into a custom hook
-    }
-  }, [state.currentTurn, state.singleScreenPlay, currentUserName]);
-
-  async function dispatchEventAndLogToSever(action: IWorldMapAction) {
-    const [newState, historyItem] = applyMovementToStateAndGetHistoryDto(
-      state,
-      action
-    );
-
-    if (historyItem) {
-      const saveEvent = await gameService.addGameEvent(
-        state.gameId,
-        historyItem
-      );
-
-      if (saveEvent.type === "FailureReport") {
-        setState({ ...state, errorMessage: saveEvent.failureMessage });
-        setShowErrorToast(true);
-        return;
-      }
-    }
-
-    setState({ ...newState, errorMessage: "" });
-  }
+  const [currentUserName, state, dispatchEventAndLogToSever] =
+    useWorldMapStateManagement(props.gameId, gameContext);
 
   let propsToAddToEachTile: ITileContext = getTileContextFromGameContext(
     gameContext,
@@ -117,8 +39,8 @@ const WorldMap = (props: IWorldMapProps) => {
     await dispatchEventAndLogToSever({ type: "MoveToNextStep" });
   };
 
-  let toggleSingleScreenPlay = () => {
-    setState({ ...state, singleScreenPlay: !state.singleScreenPlay });
+  let toggleSingleScreenPlay = async () => {
+    await dispatchEventAndLogToSever({ type: "ToggleSimpleScreenPlay" });
   };
 
   return (
@@ -127,7 +49,7 @@ const WorldMap = (props: IWorldMapProps) => {
         <Row className="gamePanel">
           <Col>
             {!state.singleScreenPlay &&
-              state.currentTurn !== session?.user?.name && (
+              state.currentTurn !== currentUserName && (
                 <LoadingModal
                   loadingMessage={`Waiting for ${state.currentTurn}...`}
                   toggleSingleScreenPlay={toggleSingleScreenPlay}
@@ -141,7 +63,7 @@ const WorldMap = (props: IWorldMapProps) => {
             )}
             <div>
               <svg viewBox="0 40 210 160">
-                {gameContext.currentMap.territories.map((x) => (
+                {state.currentMap.territories.map((x) => (
                   <NamedTerritoryTile
                     name={x.name}
                     key={`tile_for_${x.name}`}

@@ -22,6 +22,7 @@ export type ArmyApplicationSet = {
 };
 
 export interface IWorldMapState {
+  isFetchingDataFromServer: boolean;
   singleScreenPlay: boolean;
   gameId: string;
   currentMap: GameMap;
@@ -47,7 +48,8 @@ export interface IWorldMapAction {
     | "ClearSelection"
     | "LoadInitialState"
     | "MoveToNextStep"
-    | "ShowDetail";
+    | "ShowDetail"
+    | "ToggleSimpleScreenPlay";
   target?: CountryNameKey;
   armiesToApply?: number;
   initialState?: IWorldMapState;
@@ -78,6 +80,16 @@ export function applyMovementToStateAndGetHistoryDto(
   action: IWorldMapAction
 ): [IWorldMapState, HistoricalEvent | undefined] {
   switch (action.type) {
+    case "ToggleSimpleScreenPlay":
+      return buildStateHistoryTupleFromStates(
+        state,
+        {
+          ...state,
+          singleScreenPlay: !state.singleScreenPlay,
+        },
+        "",
+        []
+      );
     case "MoveToNextStep":
       return buildStateHistoryTupleFromStates(
         state,
