@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start-dev-postgresql": "powershell .//start-dev-db-container.ps1",
+    "deploy": "git push heroku main",
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p $PORT",

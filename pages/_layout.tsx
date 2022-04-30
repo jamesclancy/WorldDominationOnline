@@ -10,7 +10,6 @@ import {
 import { useSession, signIn, signOut } from "next-auth/react";
 
 import styles from "../styles/Layout.module.css";
-import { ReactNode } from "react";
 
 interface ILayoutProps {
   footer?: boolean;
@@ -51,30 +50,31 @@ export function Layout(props: React.PropsWithChildren<ILayoutProps>) {
         <footer className="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
           <ul className="nav col-md-12 justify-content-end">
             <li className="nav-item">
-              <a href="/" className="nav-link px-2 text-muted">
-                Home
-              </a>
+              <Link href="/">
+                <a className="nav-link px-2 text-muted">Home</a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a href="/leader-board" className="nav-link px-2 text-muted">
-                Leader Board
-              </a>
+              <Link href="/leader-board">
+                <a className="nav-link px-2 text-muted">Leader Board</a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a href="/about" className="nav-link px-2 text-muted">
-                About
-              </a>
+              <Link href="/about">
+                <a className="nav-link px-2 text-muted">About</a>
+              </Link>
             </li>
             <li className="nav-item">
-              <a href="/rules" className="nav-link px-2 text-muted">
-                Rules
-              </a>
+              <Link href="/rules">
+                <a className="nav-link px-2 text-muted">Rules</a>
+              </Link>
             </li>
             <li className="nav-item">
               <a
                 href="https://github.com/jamesclancy/WorldDominationOnline"
                 className="nav-link px-2 text-muted"
                 target="_blank"
+                rel="noreferrer"
               >
                 View Source
               </a>
