@@ -1,11 +1,4 @@
-import {
-  ChangeEvent,
-  useContext,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
-import { Button, Form, Modal } from "react-bootstrap";
+import { useContext } from "react";
 import { ITileContext, WorldMapContext } from "../data/models/Contexts";
 import {
   Continent,
@@ -16,6 +9,7 @@ import {
 } from "../data/models/GameMap";
 import { TerritoryState } from "../data/models/GameState";
 import { buildTerritoryPropsForTile } from "../data/models/Selectors";
+import ApplyArmiesModal from "./ApplyArmiesModal";
 
 export interface ITerritoryProps {
   applyArmy(selectedArmies: number): void;
@@ -50,67 +44,12 @@ export const NamedTerritoryTile = (props: INamedTerritoryTile) => {
 };
 
 const TerritoryTile = (props: ITerritoryProps) => {
-  let [selectedArmies, setSelectedArmies] = useState(
-    props.possibleArmiesToApply
-  );
-
-  useEffect(() => {
-    setSelectedArmies(props.possibleArmiesToApply);
-  }, [props]);
-
   const isSelected = props.isTerritorySelected;
   const isClickable = props.potentialActions !== "None";
 
   function click() {
     if (isClickable) props.select();
   }
-
-  function applyArmies() {
-    props.applyArmy(selectedArmies);
-  }
-
-  function setArmies(armies: number) {
-    setSelectedArmies(armies);
-  }
-
-  function armyRangeUpdated(e: ChangeEvent<HTMLInputElement>) {
-    setArmies(e.target.valueAsNumber);
-  }
-
-  let PopOverModal = () => {
-    let Slider = () =>
-      props.possibleArmiesToApply === 1 ? (
-        <p>Are you sure you want to use your only spare army?</p>
-      ) : (
-        <>
-          <p>Select armies to move.</p>
-          <Form.Range
-            key="slider"
-            min={1}
-            max={props.possibleArmiesToApply}
-            step={1}
-            onChange={armyRangeUpdated}
-            value={selectedArmies}
-          />{" "}
-          {selectedArmies}
-        </>
-      );
-
-    return (
-      <Modal show centered backdrop="static" keyboard={false} animation={false}>
-        <Modal.Header>
-          <Modal.Title>Confirm {props.potentialActions}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Slider />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={props.clearDetail}>Cancel</Button>
-          <Button onClick={applyArmies}>Confirm</Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
 
   const fillColor = () => {
     switch (props.potentialActions) {
@@ -226,7 +165,14 @@ const TerritoryTile = (props: ITerritoryProps) => {
         ></path>
         {textGroup}
       </g>
-      {props.shouldShowDetail && <PopOverModal />}
+      {props.shouldShowDetail && (
+        <ApplyArmiesModal
+          possibleArmiesToApply={props.possibleArmiesToApply}
+          potentialActions={props.potentialActions}
+          applyArmies={props.applyArmy}
+          clearDetail={props.clearDetail}
+        />
+      )}
     </>
   );
 };

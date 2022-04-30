@@ -56,7 +56,6 @@ export function useWorldMapStateManagement(
         setState({
           ...state,
           errorMessage: e,
-          isFetchingDataFromServer: false,
         });
       });
     }

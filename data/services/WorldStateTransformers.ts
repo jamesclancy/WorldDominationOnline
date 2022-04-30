@@ -22,7 +22,6 @@ export type ArmyApplicationSet = {
 };
 
 export interface IWorldMapState {
-  isFetchingDataFromServer: boolean;
   singleScreenPlay: boolean;
   gameId: string;
   currentMap: GameMap;
