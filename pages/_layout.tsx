@@ -13,7 +13,7 @@ import styles from "../styles/Layout.module.css";
 import { ReactNode } from "react";
 
 interface ILayoutProps {
-  footer?: ReactNode;
+  footer?: boolean;
 }
 
 const loginBar = (session: any) => {
@@ -48,7 +48,39 @@ export function Layout(props: React.PropsWithChildren<ILayoutProps>) {
         <div className={styles.mainContent}>{props.children}</div>
       </Container>
       {props.footer && (
-        <footer className={styles.footer}>{props.footer}</footer>
+        <footer className="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+          <ul className="nav col-md-12 justify-content-end">
+            <li className="nav-item">
+              <a href="/" className="nav-link px-2 text-muted">
+                Home
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="/leader-board" className="nav-link px-2 text-muted">
+                Leader Board
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="/about" className="nav-link px-2 text-muted">
+                About
+              </a>
+            </li>
+            <li className="nav-item">
+              <a href="/rules" className="nav-link px-2 text-muted">
+                Rules
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                href="https://github.com/jamesclancy/WorldDominationOnline"
+                className="nav-link px-2 text-muted"
+                target="_blank"
+              >
+                View Source
+              </a>
+            </li>
+          </ul>
+        </footer>
       )}
     </ThemeProvider>
   );
@@ -63,17 +95,11 @@ export function GeneralPageLayout(
   props: React.PropsWithChildren<IGeneralPageLayoutProps>
 ) {
   return (
-    <Layout
-      footer={
-        <>
-          <Link href="/about">About</Link> | <Link href="/rules">Rules</Link>
-        </>
-      }
-    >
+    <Layout footer={true}>
       <Container fluid>
         <Row>
           <Col>
-            <h1 className="display-1">{props.title}</h1>
+            <h1 className="display-4">{props.title}</h1>
             {props.leadInText && <p className="lead">{props.leadInText}</p>}
             {props.children}
           </Col>

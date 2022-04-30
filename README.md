@@ -1,4 +1,4 @@
-This is a poorly thought test of NextJS which simulates an Online version of the board game _World Domination_ . It is using Github OAuth for Auth and Postgresql as a store of data.
+This is a poorly thought test of NextJS which simulates an Online version of the board game _World Domination_ . It is using Github OAuth for Auth and Postgresql as a store of data. A demo is available [here](https://world-domination-online-demo.herokuapp.com/).
 
 ## Requirements
 

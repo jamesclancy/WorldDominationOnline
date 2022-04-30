@@ -85,7 +85,6 @@ model GameRecord {
 
   gameEvents GameEventRecord[] @relation("gamme_event")
 
-
   @@map(name: "games")
 }
 
