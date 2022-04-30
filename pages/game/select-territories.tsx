@@ -55,6 +55,7 @@ export const getServerSideProps: GetServerSideProps<
   ISelectTerritoriesProps
 > = async (context) => {
   const session = await getSession(context);
+  if (!session) throw new Error("unauthorized");
 
   const playerName = session?.user?.name ?? "player1";
   const mapId =

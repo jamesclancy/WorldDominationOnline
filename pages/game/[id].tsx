@@ -6,6 +6,7 @@ import { GameDetail, TerritoryState } from "../../data/models/GameState";
 import { Layout } from "../_layout";
 import PersistanceService from "../../data/services/PersistanceService";
 import { parseSingleValueFromQueryValue } from "../../utilities/UrlUtilities";
+import { getSession } from "next-auth/react";
 
 interface IGameBoardProps {
   gameMap: GameDetail;
@@ -39,6 +40,9 @@ const GameBoard: NextPage<IGameBoardProps> = (props: IGameBoardProps) => {
 export const getServerSideProps: GetServerSideProps<IGameBoardProps> = async (
   context
 ) => {
+  const session = await getSession(context);
+  if (!session) throw new Error("unauthorized");
+
   const gameId =
     parseSingleValueFromQueryValue(context.query?.id) ?? "NO ID PROVIDED";
 

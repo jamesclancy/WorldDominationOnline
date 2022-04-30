@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
 import {
   AddGameEventResponse,
   FailureReport,
@@ -14,6 +15,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  const session = await getSession({ req });
+  if (!session) throw new Error("Unauthorized");
+
   const [id, subPage, numberValue] = parseSlug(req.query.slugs);
 
   switch (subPage) {
