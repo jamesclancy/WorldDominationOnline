@@ -6,7 +6,7 @@
     "start-dev-postgresql": "powershell .//start-dev-db-container.ps1",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p $PORT",
     "lint": "next lint"
   },
   "dependencies": {

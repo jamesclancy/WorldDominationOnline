@@ -81,3 +81,89 @@ export const mapContentSelectQuery = {
     },
   },
 };
+
+export const recentEventWhereClause = (gameId: string, startAt: number) => ({
+  AND: {
+    gameId: gameId,
+    roundCounter: {
+      gt: startAt,
+    },
+  },
+});
+
+export const recentEventSelectClause = {
+  postEventPlayer: {
+    select: {
+      name: true,
+      displayName: true,
+    },
+  },
+  playerForEvent: {
+    select: {
+      name: true,
+      displayName: true,
+    },
+  },
+  newSelectedTerritory: {
+    select: {
+      name: true,
+    },
+  },
+  postEventWinningPlayer: {
+    select: {
+      name: true,
+    },
+  },
+  newRoundStep: true,
+  roundCounter: true,
+  humanReadableDescription: true,
+  roundStep: true,
+  details: {
+    select: {
+      territory: { select: { name: true } },
+      armiesPostEvent: true,
+      territoryType: true,
+      territoryPostEventOwner: {
+        select: {
+          name: true,
+          displayName: true,
+        },
+      },
+    },
+  },
+};
+
+export const gameSummaryForUserSelectQuery = (
+  userName: string,
+  includeCompletedGames: boolean
+) => ({
+  AND: [
+    {
+      OR: [
+        {
+          player1: {
+            name: userName,
+          },
+        },
+        {
+          player2: {
+            name: userName,
+          },
+        },
+      ],
+    },
+    includeCompletedGames
+      ? {}
+      : {
+          NOT: {
+            currentTurnStep: "GameOver",
+          },
+        },
+  ],
+});
+
+export const potentialOpponentsForPlayerWhereClause = (playerName: string) => ({
+  NOT: {
+    name: playerName,
+  },
+});

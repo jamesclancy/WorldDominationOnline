@@ -4,7 +4,6 @@ import {
   GameDetail,
   GameSummary,
   HistoricalEvent,
-  HistoricalEventDetailItem,
   MapDefinition,
   TerritoryState,
 } from "../models/GameState";
@@ -13,11 +12,16 @@ import {
   mapQueryResultToGameMap,
   mapQueryResultToGameSummary,
   mapQueryResultToTerritoryState,
+  mapRecentEventSelectClauseToHistoricalEvents,
 } from "../record-manipulation/maps";
 import {
+  gameSummaryForUserSelectQuery,
   gameSummarySelectQueryDefinition,
   getGameStateSelectQueryDefinition,
   mapContentSelectQuery,
+  potentialOpponentsForPlayerWhereClause,
+  recentEventSelectClause,
+  recentEventWhereClause,
 } from "../record-manipulation/queries";
 
 const getAllPossibleMaps: () => Promise<MapDefinition[]> = async () => {
@@ -189,34 +193,8 @@ const getGameSummariesForUser: (
   userName: string,
   includeCompletedGames: boolean
 ) => {
-  const whereQueryBuilder = (includeCompletedGames: boolean) => ({
-    AND: [
-      {
-        OR: [
-          {
-            player1: {
-              name: userName,
-            },
-          },
-          {
-            player2: {
-              name: userName,
-            },
-          },
-        ],
-      },
-      includeCompletedGames
-        ? {}
-        : {
-            NOT: {
-              currentTurnStep: "GameOver",
-            },
-          },
-    ],
-  });
-
   const availableMaps = await prisma.gameRecord.findMany({
-    where: whereQueryBuilder(includeCompletedGames),
+    where: gameSummaryForUserSelectQuery(userName, includeCompletedGames),
     select: gameSummarySelectQueryDefinition,
   });
 
@@ -233,11 +211,7 @@ async function getPotentialOpponentsForPlayer(
   playerName: string
 ): Promise<string[]> {
   const availableOpponents = await prisma.user.findMany({
-    where: {
-      NOT: {
-        name: playerName,
-      },
-    },
+    where: potentialOpponentsForPlayerWhereClause(playerName),
     select: {
       name: true,
     },
@@ -291,97 +265,12 @@ async function getGameEvents(
   let historicalEvents: HistoricalEvent[] = [];
 
   if (game!.currentTurn >= startAt) {
-    historicalEvents = (
+    const historicalEvents = (
       await prisma.gameEventRecord.findMany({
-        where: {
-          AND: {
-            gameId: gameId,
-            roundCounter: {
-              gt: startAt,
-            },
-          },
-        },
-        select: {
-          postEventPlayer: {
-            select: {
-              name: true,
-              displayName: true,
-            },
-          },
-          playerForEvent: {
-            select: {
-              name: true,
-              displayName: true,
-            },
-          },
-          newSelectedTerritory: {
-            select: {
-              name: true,
-            },
-          },
-          postEventWinningPlayer: {
-            select: {
-              name: true,
-            },
-          },
-          newRoundStep: true,
-          roundCounter: true,
-          humanReadableDescription: true,
-          roundStep: true,
-          details: {
-            select: {
-              territory: { select: { name: true } },
-              armiesPostEvent: true,
-              territoryType: true,
-              territoryPostEventOwner: {
-                select: {
-                  name: true,
-                  displayName: true,
-                },
-              },
-            },
-          },
-        },
+        where: recentEventWhereClause(gameId, startAt),
+        select: recentEventSelectClause,
       })
-    ).map((ev) => {
-      let details: HistoricalEventDetailItem[] = [];
-      var selectedTerritory = ev.details.find(
-        (x) => x.territoryType === "Selected"
-      );
-
-      var targetTerritory = ev.details.find(
-        (x) => x.territoryType === "Target"
-      );
-
-      if (selectedTerritory != undefined) {
-        const detail: HistoricalEventDetailItem = {
-          selectedTerritoryName: selectedTerritory.territory.name,
-          selectedTerritoryNewOwner:
-            selectedTerritory.territoryPostEventOwner.name,
-          selectedTerritoryNewArmies: selectedTerritory.armiesPostEvent,
-          targetTerritoryName: targetTerritory?.territory.name,
-          targetTerritoryNewOwner:
-            targetTerritory?.territoryPostEventOwner.name,
-          targetTerritoryNewArmies: targetTerritory?.armiesPostEvent,
-        };
-
-        details.push(detail);
-      }
-
-      const historicalEvent: HistoricalEvent = {
-        playerTurn: ev.playerForEvent.name,
-        roundCount: ev.roundCounter,
-        newPlayerTurn: ev.postEventPlayer.name,
-        mewPlayerRoundStep: ev.newRoundStep,
-        newSelectedTerritory: ev.newSelectedTerritory?.name,
-        details: details,
-        humanReadableDescription: ev.humanReadableDescription,
-        roundStep: ev.roundStep,
-        winner: ev.postEventWinningPlayer?.name,
-      };
-
-      return historicalEvent;
-    });
+    ).map((ev) => mapRecentEventSelectClauseToHistoricalEvents(ev));
 
     const territoriesOfInterest: string[] = Array.from(
       new Set(

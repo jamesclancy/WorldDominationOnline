@@ -7,7 +7,12 @@ import GameMap, {
   toContinentNameKey,
   toCountryNameKey,
 } from "../models/GameMap";
-import { GameSummary, toRoundStepType } from "../models/GameState";
+import {
+  GameSummary,
+  HistoricalEvent,
+  HistoricalEventDetailItem,
+  toRoundStepType,
+} from "../models/GameState";
 
 export function mapQueryResultToGameMap(availableMaps: {
   name: string;
@@ -133,4 +138,55 @@ export function mapQueryResultToGameSummary(availableMaps: {
     };
 
   return baseSummary;
+}
+
+export function mapRecentEventSelectClauseToHistoricalEvents(ev: {
+  postEventPlayer: { name: string; displayName: string | null };
+  playerForEvent: { name: string; displayName: string | null };
+  newSelectedTerritory: { name: string } | null;
+  postEventWinningPlayer: { name: string } | null;
+  newRoundStep: string;
+  roundCounter: number;
+  humanReadableDescription: string;
+  roundStep: string;
+  details: {
+    territory: { name: string };
+    armiesPostEvent: number;
+    territoryType: string;
+    territoryPostEventOwner: { name: string; displayName: string | null };
+  }[];
+}) {
+  let details: HistoricalEventDetailItem[] = [];
+  var selectedTerritory = ev.details.find(
+    (x) => x.territoryType === "Selected"
+  );
+
+  var targetTerritory = ev.details.find((x) => x.territoryType === "Target");
+
+  if (selectedTerritory != undefined) {
+    const detail: HistoricalEventDetailItem = {
+      selectedTerritoryName: selectedTerritory.territory.name,
+      selectedTerritoryNewOwner: selectedTerritory.territoryPostEventOwner.name,
+      selectedTerritoryNewArmies: selectedTerritory.armiesPostEvent,
+      targetTerritoryName: targetTerritory?.territory.name,
+      targetTerritoryNewOwner: targetTerritory?.territoryPostEventOwner.name,
+      targetTerritoryNewArmies: targetTerritory?.armiesPostEvent,
+    };
+
+    details.push(detail);
+  }
+
+  const historicalEvent: HistoricalEvent = {
+    playerTurn: ev.playerForEvent.name,
+    roundCount: ev.roundCounter,
+    newPlayerTurn: ev.postEventPlayer.name,
+    mewPlayerRoundStep: ev.newRoundStep,
+    newSelectedTerritory: ev.newSelectedTerritory?.name,
+    details: details,
+    humanReadableDescription: ev.humanReadableDescription,
+    roundStep: ev.roundStep,
+    winner: ev.postEventWinningPlayer?.name,
+  };
+
+  return historicalEvent;
 }
