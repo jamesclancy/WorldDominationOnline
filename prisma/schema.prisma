@@ -168,6 +168,7 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@map(name: "accounts")
 }
 
 model Session {
@@ -176,6 +177,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map(name: "sessions")
 }
 
 model User {
@@ -200,6 +203,8 @@ model User {
   eventsTriggeringWins GameEventRecord[] @relation("player_events_causing_win")
 
   postEventOwnershipEventDetail GameEventDetailRecord[] @relation("player_ownership_post_event_detail")
+
+  @@map(name: "users")
 }
 
 model VerificationToken {
@@ -208,4 +213,5 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+  @@map(name: "verification_token")
 }
